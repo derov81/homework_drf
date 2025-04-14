@@ -67,7 +67,6 @@ export default function AdminPanel() {
                 ))}
                 </tbody>
             </table>
-
         </section>
     )
 }
