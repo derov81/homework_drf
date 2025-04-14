@@ -53,6 +53,24 @@ class Tool(models.Model):
                 f'| {self.material_of_detail}| {self.material_of_tool}| {self.short_description}'
                 f'| {self.description}| {self.image_url}')
 
+class Feedback(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'Новая'),
+        ('answered', 'Отвечено'),
+    ]
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    attachment = models.FileField(upload_to='attachments/', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    reply_message = models.TextField(null=True, blank=True)
+    reply_attachment = models.FileField(upload_to='replies/', null=True, blank=True)
+    create_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.status})"
+
 
 class SliderImage(models.Model):
     image = models.ImageField(upload_to='slider_images/')
