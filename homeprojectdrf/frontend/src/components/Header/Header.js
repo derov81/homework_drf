@@ -14,7 +14,7 @@ const Header = ({user, onLogout, onLoginClick}) => {
         }}>
             <div className="logo">GROSVER</div>
             <div>
-                <nav className="navbar navbar-expand-sm navbar-dark bg-dark">
+                <nav className="navbar navbar-expand-sm navbar-dark">
                     <div className="container-fluid">
                         <button
                             className="navbar-toggler"
