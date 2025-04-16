@@ -6,14 +6,18 @@ from .views import register_user
 from . views import ToolViewSet
 from .views import SliderImageListCreate, SliderImageDelete
 from .views import UserListView, UserDetailView
+from .views import FeedbackViewSet
+from .views import ProductViewSet, OrderViewSet
 
 
 router = routers.DefaultRouter()
 router.register('tools', ToolViewSet)
+router.register('feedback', FeedbackViewSet)
+router.register('products', ProductViewSet, basename='product')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('auth/', include('rest_framework.urls')),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -25,4 +29,6 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user-list'),  # Получение списка пользователей
     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),  # Детали пользователя (редактирование/удаление)
 
+    path('cart/', OrderViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('cart/checkout/', OrderViewSet.as_view({'post': 'post'})),
 ]

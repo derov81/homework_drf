@@ -1,36 +1,5 @@
-from django.core.validators import FileExtensionValidator
 from django.db import models
-
-
-
-
-#ONE VARIATION
-class Order(models.Model):
-    name = models.CharField(max_length=30)
-
-    def __str__(self):
-        return f'{self.name}'
-
-
-class Detail(models.Model):
-    name = models.CharField(max_length=30)
-    order_id = models.ForeignKey(Order, null=True, on_delete=models.CASCADE)
-
-
-    def __str__(self):
-        return f'{self.name}'
-
-class Operation(models.Model):
-    name = models.CharField(max_length=30)
-    detail_id = models.ForeignKey(Detail, null=True, on_delete=models.CASCADE)
-
-
-    def __str__(self):
-        return f'{self.name}'
-
-
-# def upload_to(instance, filename):
-#     return f'images/{filename}'.format(filename=filename)
+from django.contrib.auth.models import User
 
 class Tool(models.Model):
     brand_tool = models.CharField(max_length=60)
@@ -43,9 +12,6 @@ class Tool(models.Model):
     short_description = models.CharField(max_length=150, null=True)
     description = models.TextField(null=True)
     image_url = models.ImageField(upload_to='images', blank=True, null=True, default='images/nophoto.jpg')
-    operation_id = models.ForeignKey(Operation, null=True, on_delete=models.CASCADE)
-
-
 
 
     def __str__(self):
@@ -70,6 +36,30 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.status})"
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_ordered = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.product.name} x{self.quantity}"
 
 
 class SliderImage(models.Model):

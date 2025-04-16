@@ -5,6 +5,7 @@ import Loader from "../Common/Loader";
 import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
+import ProductCard from "../Cart/ProductCard";
 //import SearchTools from "./SearchTools";
 
 
@@ -81,7 +82,7 @@ export default function ShowTool() {
 
     if (!tools.length) {
         return (
-            <div className="alert alert-info" >
+            <div className="alert alert-info">
                 Инструменты не найдены
                 <br/>
                 {user && (
@@ -159,27 +160,30 @@ export default function ShowTool() {
                                         <i className="fa fa-trash"></i>
                                     </button>)
                                 }
+
                             </div>
+                            {/* Купить */}
+                            <ProductCard product={tools}/>
                         </td>
                     </tr>
                 ))}
                 </tbody>
             </table>
             {/* Пагинация */}
-                <div className="d-flex justify-content-center my-3 gap-2">
-                    <button className="btn btn-outline-secondary"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}>Назад
-                    </button>
-                    {Array.from({length: totalPages}, (_, i) => (
-                        <button key={i} className={`btn ${currentPage === i + 1 ? 'btn-dark' : 'btn-outline-dark'}`}
-                                onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                    ))}
-                    <button className="btn btn-outline-secondary"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}>Вперёд
-                    </button>
-                </div>
+            <div className="d-flex justify-content-center my-3 gap-2">
+                <button className="btn btn-outline-secondary"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}>Назад
+                </button>
+                {Array.from({length: totalPages}, (_, i) => (
+                    <button key={i} className={`btn ${currentPage === i + 1 ? 'btn-dark' : 'btn-outline-dark'}`}
+                            onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                ))}
+                <button className="btn btn-outline-secondary"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}>Вперёд
+                </button>
+            </div>
         </div>
 
     );
