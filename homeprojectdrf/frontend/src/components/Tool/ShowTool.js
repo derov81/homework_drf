@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import axios from "axios";
 import {Link} from "react-router-dom";
 import Loader from "../Common/Loader";
-import AuthService from "../../services/authService";
+import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
 //import SearchTools from "./SearchTools";
@@ -13,6 +13,8 @@ export default function ShowTool() {
     const [tools, setTools] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(1); // Писем на страницу
 
 
     const user = AuthService.getCurrentUser()
@@ -90,6 +92,11 @@ export default function ShowTool() {
         );
     }
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = tools.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(tools.length / itemsPerPage);
+
 
     return (
         <div className="container mt-5">
@@ -113,27 +120,17 @@ export default function ShowTool() {
                     <th>Фото</th>
                     <th>Наименования инструмента</th>
                     <th>Тип</th>
-                    {/*<th>Рабочая длина</th>*/}
-                    {/*<th>Общая длина</th>*/}
-                    {/*<th>Материал обработки</th>*/}
-                    {/*<th>Материал инструмента</th>*/}
-                    {/*<th>Краткое описание</th>*/}
                     <th>Действия</th>
                 </tr>
                 </thead>
                 <tbody>
 
-                {tools.map((tool, index) => (
+                {currentItems.map((tool, index) => (
                     <tr key={tool.id}>
                         <td>{index + 1}</td>
                         <td>{<Image src={tool.image_url} width={38} height={38}/>}</td>
                         <td>{tool.brand_tool}</td>
                         <td>{tool.type_tool}</td>
-                        {/*<td>{tool.working_length_tool}</td>*/}
-                        {/*<td>{tool.length_tool}</td>*/}
-                        {/*<td>{tool.material_of_detail}</td>*/}
-                        {/*<td>{tool.material_of_tool}</td>*/}
-                        {/*<td>{tool.short_description}</td>*/}
                         <td>
                             <div className="btn-group" role="group">
 
@@ -168,6 +165,21 @@ export default function ShowTool() {
                 ))}
                 </tbody>
             </table>
+            {/* Пагинация */}
+                <div className="d-flex justify-content-center my-3 gap-2">
+                    <button className="btn btn-outline-secondary"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}>Назад
+                    </button>
+                    {Array.from({length: totalPages}, (_, i) => (
+                        <button key={i} className={`btn ${currentPage === i + 1 ? 'btn-dark' : 'btn-outline-dark'}`}
+                                onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                    ))}
+                    <button className="btn btn-outline-secondary"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}>Вперёд
+                    </button>
+                </div>
         </div>
 
     );

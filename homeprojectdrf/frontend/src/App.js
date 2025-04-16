@@ -1,11 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import Header from './components/Common/Header';
-import Login from './components/Login';
-import authService from './services/authService';
-import TabsSection from "./components/TabsSection";
-import FeedbackSection from "./components/FeedbackSection";
-import Home from "./components/Home";
-import AdminPanel from "./components/AdminPanel";
+import Header from './components/Header/Header';
+import Login from './components/Login/Login';
+import authService from './components/services/authService';
+import TabsSection from "./components/Sections/TabsSection";
+import FeedbackSection from "./components/Sections/FeedbackSection";
+import Home from "./components/Pages/Home";
+import AdminPanel from "./components/Sections/AdminPanel";
+import Footer from "./components/Footer/Footer";
+import AboutSection from "./components/Sections/AboutSection";
 
 
 
@@ -70,8 +72,10 @@ const App = () => {
 
                 {tab === 'feedback' && <FeedbackSection/>}
                 {tab === 'admin_panel' && <AdminPanel/>}
+                {tab === 'about' && <AboutSection/>}
 
             </main>
+            <Footer/>
         </div>
     );
 };
