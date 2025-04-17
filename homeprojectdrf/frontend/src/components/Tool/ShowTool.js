@@ -6,7 +6,6 @@ import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
 import ProductCard from "../Cart/ProductCard";
-//import SearchTools from "./SearchTools";
 
 
 export default function ShowTool() {
@@ -15,7 +14,8 @@ export default function ShowTool() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(1); // Писем на страницу
+    const [itemsPerPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
 
 
     const user = AuthService.getCurrentUser()
@@ -68,6 +68,10 @@ export default function ShowTool() {
 
     }, []);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     if (isLoading) {
         return <Loader/>;
     }
@@ -93,23 +97,37 @@ export default function ShowTool() {
         );
     }
 
+    const filteredTools = tools.filter((tool) =>
+        tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = tools.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(tools.length / itemsPerPage);
+    const currentItems = filteredTools.slice(indexOfFirstItem, indexOfLastItem);
 
 
     return (
         <div className="container mt-5">
-            <div className="d-flex justify-content-between mb-3">
+            <h3 style={{textAlign: 'center'}}>Список инструментов</h3>
 
-                <h2>Список инструментов</h2>
+            <div className="d-flex justify-content-between mb-3">
 
                 {user && (
                     <Link to={'api/tools/create/'}>Добавить инструмент</Link>
                 )
                 }
 
+            </div>
+
+            <div className="mb-3">
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Поиск по наименованию..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
             {isLoading && <Loader/>}
@@ -163,7 +181,7 @@ export default function ShowTool() {
 
                             </div>
                             {/* Купить */}
-                            <ProductCard product={tools}/>
+                            <ProductCard product={tool}/>
                         </td>
                     </tr>
                 ))}
