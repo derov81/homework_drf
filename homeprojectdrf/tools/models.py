@@ -2,13 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Tool(models.Model):
-    brand_tool = models.CharField(max_length=60)
-    type_tool = models.CharField(max_length=60)
-    diametr = models.IntegerField()
-    working_length_tool = models.IntegerField()
-    length_tool = models.IntegerField()
-    material_of_detail = models.CharField(max_length=60)
-    material_of_tool = models.CharField(max_length=60)
+    brand_tool = models.CharField(max_length=60, null=True)
+    type_tool = models.CharField(max_length=60, null=True)
+    diametr = models.IntegerField(null=True)
+    working_length_tool = models.IntegerField(null=True)
+    length_tool = models.IntegerField(null=True)
+    material_of_detail = models.CharField(max_length=60, null=True)
+    material_of_tool = models.CharField(max_length=60, null=True)
     short_description = models.CharField(max_length=150, null=True)
     description = models.TextField(null=True)
     image_url = models.ImageField(upload_to='images', blank=True, null=True, default='images/nophoto.jpg')
@@ -38,12 +38,12 @@ class Feedback(models.Model):
         return f"{self.name} ({self.status})"
 
 class Product(models.Model):
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    tool = models.OneToOneField(Tool, on_delete=models.CASCADE, related_name='product')
+    name = models.CharField(max_length=255, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return self.name
+        return f"Product for {self.tool.brand_tool}"
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

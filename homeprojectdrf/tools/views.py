@@ -16,7 +16,7 @@ from .serializers import UserSerializer
 from django.contrib.auth.models import User
 from .models import Feedback
 from .serializers import FeedbackSerializer
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from .models import Product, Order, OrderItem
 from .serializers import ProductSerializer, OrderSerializer
 
@@ -106,6 +106,16 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
             return [IsAdminUser()]
         return [AllowAny()]
+
+    def perform_create(self, serializer):
+        feedback = serializer.save()
+        send_mail(
+            subject="Новая заявка",
+            message=feedback.message,
+            from_email="maniprutby@gmail.com",
+            recipient_list=["maniprutby@gmail.com"],
+            fail_silently=False,
+        )
 
     def perform_update(self, serializer):
         feedback = serializer.save()

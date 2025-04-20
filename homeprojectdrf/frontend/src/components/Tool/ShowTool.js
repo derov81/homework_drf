@@ -5,7 +5,7 @@ import Loader from "../Common/Loader";
 import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
-import ProductCard from "../Cart/ProductCard";
+//import ProductCard from "../Cart/ProductCard";
 
 
 export default function ShowTool() {
@@ -30,7 +30,7 @@ export default function ShowTool() {
             const token = localStorage.getItem('token');
             await axios.delete(`${API_URL}${id}/`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                   'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -50,7 +50,7 @@ export default function ShowTool() {
             const token = localStorage.getItem('token');
             const response = await axios.get(API_URL, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             setTools(response.data);
@@ -100,6 +100,36 @@ export default function ShowTool() {
     const filteredTools = tools.filter((tool) =>
         tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+     const handleBuy = async (productId) => {
+    if (!productId) {
+        alert("Ошибка: productId не передан!");
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await axios.post(
+            "http://127.0.0.1:8000/api/cart/",
+            {
+                product_id: productId,
+                quantity: 1,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        alert("Инструмент добавлен в корзину");
+    } catch (err) {
+        console.error("Ошибка при покупке:", err);
+        alert("Ошибка: " + (err.response?.data?.detail || "Bad request"));
+    }
+};
+
 
     const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -179,9 +209,15 @@ export default function ShowTool() {
                                     </button>)
                                 }
 
+                                <button
+                                    className="btn btn-success"
+                                    onClick={() => handleBuy(tool.product_id)}
+                                >
+                                    Купить
+                                </button>
+
                             </div>
-                            {/* Купить */}
-                            <ProductCard product={tool}/>
+
                         </td>
                     </tr>
                 ))}
