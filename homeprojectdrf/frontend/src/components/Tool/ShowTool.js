@@ -10,12 +10,14 @@ import {Image} from "react-bootstrap";
 
 export default function ShowTool() {
     const API_URL = "http://127.0.0.1:8000/api/tools/";
+    const API_PRODUCT = "http://127.0.0.1:8000/api/products/";
     const [tools, setTools] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [products, setProducts] = useState([]);
 
 
     const user = AuthService.getCurrentUser()
@@ -30,7 +32,7 @@ export default function ShowTool() {
             const token = localStorage.getItem('token');
             await axios.delete(`${API_URL}${id}/`, {
                 headers: {
-                   'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -63,8 +65,29 @@ export default function ShowTool() {
         }
     };
 
+    const fetchProducts = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(API_PRODUCT, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setProducts(response.data);
+
+        } catch (error) {
+            console.error('Ошибка при загрузке данных:', error);
+            setError(error.response?.data?.detail || 'Ошибка при загрузке инструментов');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchTools();
+        fetchProducts();
 
     }, []);
 
@@ -101,35 +124,35 @@ export default function ShowTool() {
         tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-     const handleBuy = async (productId) => {
-    if (!productId) {
-        alert("Ошибка: productId не передан!");
-        return;
-    }
+   const handleBuy = async (productId) => {
+  const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
+  if (!productId) {
+    alert("Product ID не найден");
+    return;
+  }
 
-    try {
-        const response = await axios.post(
-            "http://127.0.0.1:8000/api/cart/",
-            {
-                product_id: productId,
-                quantity: 1,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        alert("Инструмент добавлен в корзину");
-    } catch (err) {
-        console.error("Ошибка при покупке:", err);
-        alert("Ошибка: " + (err.response?.data?.detail || "Bad request"));
-    }
+  try {
+    await axios.post(
+      "http://127.0.0.1:8000/api/cart/",
+      {
+        product_id: productId,
+        quantity: 1,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    alert("Инструмент добавлен в корзину");
+  } catch (err) {
+    console.error("Ошибка при покупке:", err.response?.data || err);
+    alert("Не удалось купить инструмент");
+  }
 };
-
 
     const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -169,6 +192,7 @@ export default function ShowTool() {
                     <th>Фото</th>
                     <th>Наименования инструмента</th>
                     <th>Тип</th>
+                    <th>Цена</th>
                     <th>Действия</th>
                 </tr>
                 </thead>
@@ -180,6 +204,11 @@ export default function ShowTool() {
                         <td>{<Image src={tool.image_url} width={38} height={38}/>}</td>
                         <td>{tool.brand_tool}</td>
                         <td>{tool.type_tool}</td>
+                        <td>
+                            {
+                                products.find(p => p.id === tool.product_id)?.price ?? 0.00
+                            } ₽
+                        </td>
                         <td>
                             <div className="btn-group" role="group">
 
@@ -221,6 +250,7 @@ export default function ShowTool() {
                         </td>
                     </tr>
                 ))}
+
                 </tbody>
             </table>
             {/* Пагинация */}

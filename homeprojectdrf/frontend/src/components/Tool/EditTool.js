@@ -7,15 +7,30 @@ import "./Tool.css";
 
 const EditTool = () => {
   const [tool, setTool] = useState({});
+  const [product, setProduct] = useState({});
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const getToolApi = "http://127.0.0.1:8000/api/tools/";
+  const API_PRODUCT = "http://127.0.0.1:8000/api/products/";
 
   useEffect(() => {
     getTool();
   }, [id]);  // Добавляем зависимость, чтобы запрос выполнялся только при изменении id
+
+  useEffect(() => {
+  if (tool.product_id) {
+    axios
+      .get(`${API_PRODUCT}${tool.product_id}/`)
+      .then((response) => {
+        setProduct(response.data);
+      })
+      .catch((err) => {
+        console.error("Ошибка загрузки продукта:", err);
+      });
+  }
+}, [tool.product_id]);
 
   const getTool = () => {
     axios
@@ -28,10 +43,27 @@ const EditTool = () => {
       });
   };
 
+//   const getProduct = (productId) => {
+//   axios
+//     .get(`${API_PRODUCT}${productId}/`)
+//     .then((response) => {
+//       setProduct(response.data);
+//     })
+//     .catch((err) => {
+//       console.error("Ошибка загрузки продукта:", err);
+//     });
+// };
+
   const handelInput = (e) => {
     e.preventDefault();
     const { name, value } = e.target;
     setTool({ ...tool, [name]: value });
+  };
+
+  const handelInputProduct = (e) => {
+    e.preventDefault();
+    const { name, value } = e.target;
+    setProduct({...product, [name]: value});
   };
 
   const handelSubmit = (e) => {
@@ -39,6 +71,28 @@ const EditTool = () => {
     setIsLoading(true);
 
     axios.put(`${getToolApi}${id}/`, tool, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        console.log("Инструмент обновлен:", response.data);
+        navigate("/");
+      })
+      .catch((error) => {
+      // Проверка, если ошибка - это объект с ключом detail
+      const errorMessage = error.response?.data?.detail || error.message;
+      setError(errorMessage);  // Устанавливаем строку ошибки
+      setIsLoading(false);
+    });
+  };
+
+  const handelSubmitProduct = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    axios.put(`${API_PRODUCT}${product.id}/`, product, {
       headers: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -180,6 +234,20 @@ const EditTool = () => {
               name="image_url"
               accept="image/jpeg, image/png, image/gif"
               onChange={handleImageChange}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary submit-btn">Сохранить изменения</button>
+      </form>
+      <form onSubmit={handelSubmitProduct}>
+        <div className="mb-3">
+          <label htmlFor="price" className="form-label">Цена</label>
+          <input
+              type="number"
+              className="form-control"
+              id="price"
+              name="price"
+              value={product.price || ''}
+              onChange={handelInputProduct}
           />
         </div>
         <button type="submit" className="btn btn-primary submit-btn">Сохранить изменения</button>
