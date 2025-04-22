@@ -5,7 +5,7 @@ import Loader from "../Common/Loader";
 import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
-//import ProductCard from "../Cart/ProductCard";
+
 
 
 export default function ShowTool() {
@@ -18,6 +18,7 @@ export default function ShowTool() {
     const [itemsPerPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [products, setProducts] = useState([]);
+    const [quantities, setQuantities] = useState({});
 
 
     const user = AuthService.getCurrentUser()
@@ -124,34 +125,52 @@ export default function ShowTool() {
         tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-   const handleBuy = async (productId) => {
-  const token = localStorage.getItem("token");
+    const increaseQuantity = (toolId) => {
+    setQuantities(prev => ({
+        ...prev,
+        [toolId]: (prev[toolId] || 1) + 1,
+    }));
+};
 
-  if (!productId) {
-    alert("Product ID не найден");
-    return;
-  }
+const decreaseQuantity = (toolId) => {
+    setQuantities(prev => ({
+        ...prev,
+        [toolId]: Math.max((prev[toolId] || 1) - 1, 1),
+    }));
+};
 
-  try {
-    await axios.post(
-      "http://127.0.0.1:8000/api/cart/",
-      {
-        product_id: productId,
-        quantity: 1,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+   const handleBuy = async (toolId) => {
+    const token = localStorage.getItem("token");
 
-    alert("Инструмент добавлен в корзину");
-  } catch (err) {
-    console.error("Ошибка при покупке:", err.response?.data || err);
-    alert("Не удалось купить инструмент");
-  }
+    try {
+        const tool = tools.find(t => t.id === toolId);
+        const productId = tool?.product_id;
+        const quantity = quantities[toolId] || 1;
+
+        if (!productId) {
+            alert("Product ID не найден");
+            return;
+        }
+// console.log("Отправка в корзину:", { product_id: productId, quantity });
+        await axios.post(
+            "http://127.0.0.1:8000/api/cart/",
+            {
+                product_id: productId,
+                quantity: quantity,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        alert("Инструмент добавлен в корзину");
+    } catch (err) {
+        console.error("Ошибка при покупке:", err);
+        alert("Не удалось купить инструмент");
+    }
 };
 
     const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
@@ -228,7 +247,7 @@ export default function ShowTool() {
                                     <i className="fa fa-eye"></i>
                                 </Link>
 
-                                {user &&
+                                {user && user.username === 'admin' &&
 
                                     (<button
                                         className="btn btn-sm btn-outline-danger"
@@ -237,14 +256,19 @@ export default function ShowTool() {
                                         <i className="fa fa-trash"></i>
                                     </button>)
                                 }
-
+                                <button className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => decreaseQuantity(tool.id)}>-
+                                </button>
+                                <span>{quantities[tool.id] || 1}</span>
+                                <button className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => increaseQuantity(tool.id)}>+
+                                </button>
                                 <button
-                                    className="btn btn-success"
-                                    onClick={() => handleBuy(tool.product_id)}
+                                    className="btn btn-success btn-sm"
+                                    onClick={() => handleBuy(tool.id)}
                                 >
                                     Купить
                                 </button>
-
                             </div>
 
                         </td>

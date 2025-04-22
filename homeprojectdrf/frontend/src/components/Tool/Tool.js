@@ -5,13 +5,17 @@ import { Modal, Button } from "react-bootstrap";
 import "./Tool.css";
 
 const Tool = () => {
-  const [tool, setTool] = useState({});
+  const [tool, setTool] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const { id } = useParams();
   const getToolApi = "http://localhost:8000/api/tools/";
+  const API_PRODUCT = "http://127.0.0.1:8000/api/products/";
+  const [products, setProducts] = useState([]);
+  const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
     getTool();
+    fetchProducts();
   }, [id]);
 
   const getTool = async () => {
@@ -22,6 +26,67 @@ const Tool = () => {
       console.error("Ошибка при загрузке инструмента:", err);
     }
   };
+
+
+  const fetchProducts = async () => {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(API_PRODUCT, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setProducts(response.data);
+    };
+
+  const increaseQuantity = (toolId) => {
+    setQuantities(prev => ({
+        ...prev,
+        [toolId]: (prev[toolId] || 1) + 1,
+    }));
+};
+
+const decreaseQuantity = (toolId) => {
+    setQuantities(prev => ({
+        ...prev,
+        [toolId]: Math.max((prev[toolId] || 1) - 1, 1),
+    }));
+};
+
+const handleBuy = async (toolId) => {
+    const token = localStorage.getItem("token");
+
+    try {
+        const productId = tool?.product_id;
+        const quantity = quantities[toolId] || 1;
+
+        if (!productId) {
+            alert("Product ID не найден");
+            return;
+        }
+
+        console.log("Отправка в корзину:", { product_id: productId, quantity });
+
+        await axios.post(
+            "http://127.0.0.1:8000/api/cart/",
+            {
+                product_id: productId,
+                quantity: quantity,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        alert("Инструмент добавлен в корзину");
+    } catch (err) {
+        console.error("Ошибка при покупке:", err);
+        alert("Не удалось купить инструмент");
+    }
+};
+
 
   const handleImageClick = () => {
     setShowModal(true);
@@ -49,24 +114,44 @@ const Tool = () => {
         <div className="col-md-7">
           <p className="lead">{tool.description}</p>
         </div>
+          <div>
+                  {
+                      products.find(p => p.id === tool.product_id)?.price ?? 0.00
+                  } ₽
+          </div>
+          <div>
+              <button className="btn btn-sm btn-outline-secondary"
+                      onClick={() => decreaseQuantity(tool.id)}>-
+              </button>
+              <span>{quantities[tool.id] || 1}</span>
+              <button className="btn btn-sm btn-outline-secondary"
+                      onClick={() => increaseQuantity(tool.id)}>+
+              </button>
+              <button
+                  className="btn btn-success btn-sm"
+                  onClick={() => handleBuy(tool.id)}
+              >
+                  Купить
+              </button>
+          </div>
       </div>
 
-      {/* Модальное окно для увеличенного изображения */}
-      <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static">
-        <Modal.Body className="text-center p-0">
-          <img
-            src={tool.image_url}
-            alt="Увеличенное изображение"
-            className="img-fluid"
-            style={{ maxHeight: "80vh", objectFit: "contain" }}
-          />
-        </Modal.Body>
-        <Modal.Footer className="justify-content-center">
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Закрыть
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {/* Модальное окно для увеличенного изображения */}
+        <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static">
+            <Modal.Body className="text-center p-0">
+                <img
+                    src={tool.image_url}
+                    alt="Увеличенное изображение"
+                    className="img-fluid"
+                    style={{maxHeight: "80vh", objectFit: "contain"}}
+                />
+            </Modal.Body>
+            <Modal.Footer className="justify-content-center">
+                <Button variant="secondary" onClick={handleCloseModal}>
+                    Закрыть
+                </Button>
+            </Modal.Footer>
+        </Modal>
     </div>
   );
 };
