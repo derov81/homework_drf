@@ -5,6 +5,7 @@ import Loader from "../Common/Loader";
 import AuthService from "../services/authService";
 import './Tool.css'
 import {Image} from "react-bootstrap";
+import {useCart} from "../Cart/CartContext";
 
 
 
@@ -15,10 +16,11 @@ export default function ShowTool() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(1);
+    const [itemsPerPage] = useState(3);
     const [searchTerm, setSearchTerm] = useState("");
     const [products, setProducts] = useState([]);
     const [quantities, setQuantities] = useState({});
+    const { addToCart } = useCart();
 
 
     const user = AuthService.getCurrentUser()
@@ -140,37 +142,16 @@ const decreaseQuantity = (toolId) => {
 };
 
    const handleBuy = async (toolId) => {
-    const token = localStorage.getItem("token");
+     const tool = tools.find(t => t.id === toolId);
+    const productId = tool?.product_id;
 
-    try {
-        const tool = tools.find(t => t.id === toolId);
-        const productId = tool?.product_id;
-        const quantity = quantities[toolId] || 1;
-
-        if (!productId) {
-            alert("Product ID не найден");
-            return;
-        }
-// console.log("Отправка в корзину:", { product_id: productId, quantity });
-        await axios.post(
-            "http://127.0.0.1:8000/api/cart/",
-            {
-                product_id: productId,
-                quantity: quantity,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        alert("Инструмент добавлен в корзину");
-    } catch (err) {
-        console.error("Ошибка при покупке:", err);
-        alert("Не удалось купить инструмент");
+    if (!productId) {
+        alert("Product ID не найден");
+        return;
     }
+
+    addToCart(productId, 1);
+    alert("Добавлено в корзину!");
 };
 
     const totalPages = Math.ceil(filteredTools.length / itemsPerPage);

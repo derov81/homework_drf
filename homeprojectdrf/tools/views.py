@@ -8,7 +8,6 @@ from .permissions import CustomPermission
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework import generics
 from .models import SliderImage
 from .serializers import SliderImageSerializer
@@ -133,7 +132,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 print("Ошибка отправки письма:", e)
 
-class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
@@ -146,18 +145,26 @@ class OrderViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        product_id = request.data.get("product_id")
-        quantity = int(request.data.get("quantity", 1))
+        try:
+            product_id = request.data.get("product_id")
+            quantity = int(request.data.get("quantity", 1))
 
-        order, _ = Order.objects.get_or_create(user=request.user, is_ordered=False)
+            if not product_id:
+                return Response({"error": "product_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Добавляем товар
-        item, created = OrderItem.objects.get_or_create(order=order, product_id=product_id)
-        if not created:
-            item.quantity += quantity
-        item.save()
+            # Получаем или создаем заказ
+            order, _ = Order.objects.get_or_create(user=request.user, is_ordered=False)
 
-        return Response({"message": "Товар добавлен в корзину"}, status=status.HTTP_200_OK)
+            # Добавляем товар в корзину
+            item, created = OrderItem.objects.get_or_create(order=order, product_id=product_id)
+            if not created:
+                item.quantity += quantity
+            item.save()
+
+            return Response({"message": "Товар добавлен в корзину"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, *args, **kwargs):
         # Оформить заказ
@@ -167,4 +174,37 @@ class OrderViewSet(viewsets.ViewSet):
             order.save()
             return Response({"message": "Заказ оформлен"})
         return Response({"error": "Корзина пуста"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['DELETE'])
+    def delete_cart_item(request, product_id):
+        try:
+            item = OrderItem.objects.get(
+                order__user=request.user,
+                product__id=product_id,
+                order__is_ordered=False
+            )
+            item.delete()
+            return Response({'message': 'Товар удалён из корзины'}, status=status.HTTP_204_NO_CONTENT)
+        except OrderItem.DoesNotExist:
+            return Response({'error': 'Товар не найден в корзине'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['patch'], url_path='update')
+    def update_quantity(self, request):
+        product_id = request.data.get("product_id")
+        quantity = request.data.get("quantity")
+
+        if not product_id or quantity is None:
+            return Response({"error": "product_id и quantity обязательны"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            order = Order.objects.get(user=request.user, is_ordered=False)
+            item = OrderItem.objects.get(order=order, product_id=product_id)
+
+            item.quantity = quantity
+            item.save()
+            return Response({"message": "Количество обновлено"}, status=status.HTTP_200_OK)
+        except OrderItem.DoesNotExist:
+            return Response({"error": "Товар не найден в корзине"}, status=status.HTTP_404_NOT_FOUND)
+        except Order.DoesNotExist:
+            return Response({"error": "Нет активного заказа"}, status=status.HTTP_404_NOT_FOUND)
 

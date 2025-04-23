@@ -10,6 +10,7 @@ from .views import FeedbackViewSet
 from .views import ProductViewSet, OrderViewSet
 
 
+
 router = routers.DefaultRouter()
 router.register('tools', ToolViewSet)
 router.register('feedback', FeedbackViewSet)
@@ -31,4 +32,6 @@ urlpatterns = [
 
     path('cart/', OrderViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('cart/checkout/', OrderViewSet.as_view({'post': 'post'})),
+    path('cart/<int:product_id>/', OrderViewSet.delete_cart_item),
+    path('cart/update/', OrderViewSet.as_view({'patch': 'update_quantity'})),
 ]

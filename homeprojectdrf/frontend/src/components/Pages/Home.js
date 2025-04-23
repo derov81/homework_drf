@@ -5,6 +5,7 @@ import Tool from "../Tool/Tool";
 import EditTool from "../Tool/EditTool";
 import CreateTool from "../Tool/CreateTool";
 import {CartProvider} from '../Cart/CartContext';
+import CartPage from "../Cart/CartPage";
 
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
                         <Route path="/api/tools/:id" element={<EditTool/>}/>
                         <Route path="/" element={<ShowTool/>}/>
                         <Route path="/api/tools/show/:id" element={<Tool/>}/>
+                        <Route path="/cart" element={<CartPage />} />
                     </Routes>
 
             </CartProvider>

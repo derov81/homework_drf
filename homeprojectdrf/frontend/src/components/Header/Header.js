@@ -1,7 +1,33 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
+import { Link } from 'react-router-dom';
 import "../Common/Common.css";
+import axios from "axios";
+
+
 
 const Header = ({user, onLogout, onLoginClick}) => {
+
+    const [cartCount, setCartCount] = useState(0);
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        if (token) {
+            axios.get("http://127.0.0.1:8000/api/cart/", {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                const items = response.data.items || [];
+                const total = items.reduce((acc, item) => acc + item.quantity, 0);
+                setCartCount(total);
+            })
+            .catch(error => {
+                console.error("Ошибка при загрузке корзины:", error);
+            });
+        }
+    }, []);
+
     return (
 
         <header style={{
@@ -27,11 +53,19 @@ const Header = ({user, onLogout, onLoginClick}) => {
 
                     </div>
                 </nav>
+
+            </div>
+            <div>
+                <Link to="/cart" className="btn btn-outline-light position-relative">
+                    🛒
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {cartCount}
+                    </span>
+                </Link>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
                 {user ? (
                     <>
-
                         <span style={{marginRight: '15px'}}>
                             Пользователь: {user.username}
                         </span>
