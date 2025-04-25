@@ -2,10 +2,18 @@ import React, { useEffect } from "react";
 import { useCart } from "./CartContext";
 import axios from "axios";
 import {Link} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
-const CartPage = () => {
+
+const CartPage = ({ cart }) => {
     const { cartItems, fetchCart } = useCart();
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
+
+     const handleCheckout = () => {
+        navigate('/checkout', { state: { cart } });
+    };
+
 
     useEffect(() => {
         fetchCart();
@@ -52,24 +60,26 @@ const CartPage = () => {
         }
     };
 
-    const placeOrder = async () => {
-        try {
-            const response = await axios.post(
-                "http://127.0.0.1:8000/api/cart/order/",
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            alert("🎉 Заказ успешно оформлен!");
-            fetchCart(); // Обновить корзину (должна быть пустой)
-        } catch (error) {
-            console.error("Ошибка при оформлении заказа:", error);
-            alert("❌ Не удалось оформить заказ");
-        }
-    };
+
+
+    // const placeOrder = async () => {
+    //     try {
+    //         await axios.post(
+    //             "http://127.0.0.1:8000/api/cart/order/",
+    //             {},
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                 },
+    //             }
+    //         );
+    //         alert("🎉 Заказ успешно оформлен!");
+    //         fetchCart(); // Обновить корзину (должна быть пустой)
+    //     } catch (error) {
+    //         console.error("Ошибка при оформлении заказа:", error);
+    //         alert("❌ Не удалось оформить заказ");
+    //     }
+    // };
 
     const totalSum = cartItems.reduce((acc, item) => acc + item.quantity * item.product.price, 0);
 
@@ -133,7 +143,7 @@ const CartPage = () => {
                 <h4>Итого: <strong>{totalSum.toFixed(2)} ₽</strong></h4>
                 <button
                     className="btn btn-success"
-                    onClick={placeOrder}
+                    onClick={handleCheckout}
                 >
                     ✅ Оформить заказ
                 </button>
