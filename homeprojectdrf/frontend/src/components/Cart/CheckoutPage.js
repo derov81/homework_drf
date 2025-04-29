@@ -3,6 +3,7 @@ import {Link, useNavigate} from 'react-router-dom';
 import './CheckoutPage.css';
 import {useCart} from './CartContext';
 
+
 const CheckoutPage = () => {
     const navigate = useNavigate();
     const {cartItems, fetchCart} = useCart();
@@ -74,6 +75,32 @@ const CheckoutPage = () => {
                     )}
                     <div className="total">
                         <strong>Итого: {totalSum}₽</strong>
+                    </div>
+                    <div style={{marginTop: '30px'}}>
+                        <h3>Способ оплаты:</h3>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px'}}>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="card" defaultChecked/> Банковская карта
+                            </label>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="cash"/> Наличные
+                            </label>
+                        </div>
+
+                        <button
+                            onClick={() => alert("Оплата пока только в тестовом режиме 😅")}
+                            style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#007bff',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '16px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Приступить к оплате
+                        </button>
                     </div>
                 </div>
             </div>
