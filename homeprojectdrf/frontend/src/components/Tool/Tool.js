@@ -98,7 +98,7 @@ const handleBuy = async (toolId) => {
 
   return (
     <div className="container mt-5">
-      <Link to="/">← На главную</Link>
+      <Link to="/">← В каталог</Link>
       <h2 className="mt-3 mb-4">{tool.brand_tool}</h2>
 
       <div className="row align-items-start">

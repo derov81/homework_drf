@@ -1,10 +1,9 @@
 import React, {useState} from "react";
-//import Form from "react-bootstrap/Form"
 import {Link, useNavigate} from "react-router-dom";
 import Loader from "../Common/Loader";
 import './Tool.css'
 import axios from "axios";
-//import AuthService from "../../services/authService";
+
 
 
 const CreateTool = () => {
@@ -84,51 +83,7 @@ const CreateTool = () => {
         }
     };
 
-    // const handleSubmitProduct = async (event) => {
-    //     event.preventDefault();
-    //     setIsLoading(true);
-    //     setError(null);
-    //
-    //     try {
-    //         const token = localStorage.getItem('token');
-    //         console.log('Используемый токен:', token);
-    //
-    //         if (!token) {
-    //             throw new Error('Необходима авторизация');
-    //         }
-    //
-    //         const formData = new FormData();
-    //         for (const key in tool) {
-    //             formData.append(key, tool[key]);
-    //         }
-    //         formData.append("price", product.price);
-    //
-    //         console.log('Отправляемые данные:', tool); // Логируем данные перед отправкой
-    //
-    //         const response = await axios.post(
-    //             'http://127.0.0.1:8000/api/products/',
-    //             formData,
-    //             {
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data',
-    //                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-    //                 },
-    //             }
-    //         );
-    //
-    //         console.log('Ответ сервера:', response); // Логируем ответ сервера
-    //
-    //         if (response.status === 201) {
-    //             navigate("/");
-    //         }
-    //     } catch (err) {
-    //         console.error('Ошибка при создании инструмента:', err);
-    //         console.log('Ответ от сервера:', err.response?.data); // Для получения подробной ошибки
-    //         setError(err.response?.data?.detail || err.message || 'Произошла ошибка при создании инструмента');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
+
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -140,7 +95,7 @@ const CreateTool = () => {
     };
     return (
         <div className='tool-form'>
-            <Link to={'/'}>На главную</Link>
+            <Link to={'/'}>В каталог</Link>
             <div className='heading'>
                 {isLoading && <Loader/>}
                 {error && <p>Error: {error}</p>}

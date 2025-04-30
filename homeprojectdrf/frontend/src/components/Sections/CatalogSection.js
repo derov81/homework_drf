@@ -9,12 +9,12 @@ import CartPage from "../Cart/CartPage";
 import CheckoutPage from "../Cart/CheckoutPage";
 
 
-export default function Home() {
 
-    return (
+export default function CatalogSection(){
+
+    return(
         <section>
             <CartProvider>
-
                     <Routes>
                         <Route path="/api/tools/create" element={<CreateTool/>}/>
                         <Route path="/api/tools/:id" element={<EditTool/>}/>
@@ -23,10 +23,7 @@ export default function Home() {
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />
                     </Routes>
-
             </CartProvider>
-
         </section>
     )
 }
-

@@ -28,7 +28,7 @@ const CheckoutPage = () => {
 
     return (
         <div className="checkout-container">
-            <Link to={'/'}>На главную</Link>
+            <Link to={'/'}>В каталог</Link>
             <h2>Оформление заказа</h2>
             <div className="checkout-content">
                 <div className="cart-summary">

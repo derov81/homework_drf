@@ -4,10 +4,11 @@ import Login from './components/Login/Login';
 import authService from './components/services/authService';
 import TabsSection from "./components/Sections/TabsSection";
 import FeedbackSection from "./components/Sections/FeedbackSection";
-import Home from "./components/Pages/Home";
 import AdminPanel from "./components/Sections/AdminPanel";
 import Footer from "./components/Footer/Footer";
 import AboutSection from "./components/Sections/AboutSection";
+import CatalogSection from "./components/Sections/CatalogSection";
+import Home from "./components/Sections/Home";
 
 
 
@@ -69,7 +70,7 @@ const App = () => {
                         )}
                     </>
                 )}
-
+                {tab === 'catalog' && <CatalogSection/>}
                 {tab === 'feedback' && <FeedbackSection/>}
                 {tab === 'admin_panel' && <AdminPanel/>}
                 {tab === 'about' && <AboutSection/>}

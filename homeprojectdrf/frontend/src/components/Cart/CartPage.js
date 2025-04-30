@@ -70,7 +70,7 @@ const CartPage = ({cart}) => {
 
     return (
         <div className="container mt-5">
-            <Link to={'/'}>На главную</Link>
+            <Link to={'/'}>В каталог</Link>
             <h2>🛒 Ваша корзина</h2>
             <table className="table">
                 <thead>

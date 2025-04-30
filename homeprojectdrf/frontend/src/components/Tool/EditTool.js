@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import {useParams, useNavigate, Link} from "react-router-dom";
 import Loader from "../Common/Loader";
 import "./Tool.css";
-//import AuthService from "../../services/authService";
+
 
 const EditTool = () => {
   const [tool, setTool] = useState({});
@@ -42,17 +42,6 @@ const EditTool = () => {
         console.error("Ошибка загрузки инструмента:", err);
       });
   };
-
-//   const getProduct = (productId) => {
-//   axios
-//     .get(`${API_PRODUCT}${productId}/`)
-//     .then((response) => {
-//       setProduct(response.data);
-//     })
-//     .catch((err) => {
-//       console.error("Ошибка загрузки продукта:", err);
-//     });
-// };
 
   const handelInput = (e) => {
     e.preventDefault();
@@ -121,7 +110,7 @@ const EditTool = () => {
 
   return (
     <div className="tool-form">
-      <Link to={'/'}>На главную</Link>
+      <Link to={'/'}>В каталог</Link>
       <div className="heading">
         {isLoading && <Loader />}
         {error && <p>Error: {error}</p>}
