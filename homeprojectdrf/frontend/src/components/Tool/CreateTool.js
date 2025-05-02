@@ -124,16 +124,21 @@ const CreateTool = () => {
                     </div>
 
                     <div className="mb-3">
-                        <label className="form-label">Тип*</label>
-                        <input
-                            type="text"
+                        <label className="form-label">Тип инструмента*</label>
+                        <select
                             className="form-control"
                             id="type_tool"
                             name="type_tool"
                             value={tool.type_tool}
                             onChange={handleInput}
                             required
-                        />
+                        >
+                            <option value="">-- Выберите тип --</option>
+                            <option value="фреза">Фреза</option>
+                            <option value="сверло">Сверло</option>
+                            <option value="развертка">Развертка</option>
+                            <option value="метчик">Метчик</option>
+                        </select>
                     </div>
 
                     <div className="mb-3">

@@ -130,14 +130,19 @@ const EditTool = () => {
         </div>
         <div className="mb-3">
           <label htmlFor="type_tool" className="form-label">Тип инструмента</label>
-          <input
-              type="text"
+          <select
               className="form-control"
               id="type_tool"
               name="type_tool"
               value={tool.type_tool || ''}
               onChange={handelInput}
-          />
+          >
+            <option value="">-- Выберите тип --</option>
+            <option value="фреза">Фреза</option>
+            <option value="сверло">Сверло</option>
+            <option value="развертка">Развертка</option>
+            <option value="метчик">Метчик</option>
+          </select>
         </div>
         <div className="mb-3">
           <label htmlFor="working_length_tool" className="form-label">Диаметр инструмента</label>
