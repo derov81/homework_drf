@@ -66,7 +66,9 @@ const App = () => {
                 {tab === 'main' && (
                     <>
                         {!selectedOrder && (
-                            <Home onSelect={(orderId) => setSelectedOrder(orderId)}/>
+                            <Home onSelect={(orderId) => setSelectedOrder(orderId)}
+                            setTab={setTab}
+                            />
                         )}
                     </>
                 )}
