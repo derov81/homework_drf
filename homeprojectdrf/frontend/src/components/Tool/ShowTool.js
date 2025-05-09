@@ -8,7 +8,6 @@ import {Image} from "react-bootstrap";
 import {useCart} from "../Cart/CartContext";
 
 
-
 export default function ShowTool() {
     const API_URL = "http://127.0.0.1:8000/api/tools/";
     const API_PRODUCT = "http://127.0.0.1:8000/api/products/";
@@ -20,10 +19,11 @@ export default function ShowTool() {
     const [searchTerm, setSearchTerm] = useState("");
     const [products, setProducts] = useState([]);
     const [quantities, setQuantities] = useState({});
-    const { addToCart } = useCart();
-
+    const {addToCart} = useCart();
+    const [typeFilter, setTypeFilter] = useState("all");
 
     const user = AuthService.getCurrentUser()
+
 
     const handleDelete = async (id) => {
         if (!window.confirm('Вы уверены, что хотите удалить этот инструмент?')) {
@@ -60,25 +60,12 @@ export default function ShowTool() {
             });
             setTools(response.data);
 
-        } catch (error) {
-            console.error('Ошибка при загрузке данных:', error);
-            setError(error.response?.data?.detail || 'Ошибка при загрузке инструментов');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchProducts = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(API_PRODUCT, {
+            const responsePro = await axios.get(API_PRODUCT, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            setProducts(response.data);
+            setProducts(responsePro.data);
 
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
@@ -90,8 +77,6 @@ export default function ShowTool() {
 
     useEffect(() => {
         fetchTools();
-        fetchProducts();
-
     }, []);
 
     useEffect(() => {
@@ -123,36 +108,38 @@ export default function ShowTool() {
         );
     }
 
-    const filteredTools = tools.filter((tool) =>
-        tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredTools = tools.filter((tool) => {
+        const matchesSearch = tool.brand_tool.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = typeFilter === "all" || tool.type_tool.toLowerCase() === typeFilter;
+        return matchesSearch && matchesType;
+    });
 
     const increaseQuantity = (toolId) => {
-    setQuantities(prev => ({
-        ...prev,
-        [toolId]: (prev[toolId] || 1) + 1,
-    }));
-};
+        setQuantities(prev => ({
+            ...prev,
+            [toolId]: (prev[toolId] || 1) + 1,
+        }));
+    };
 
-const decreaseQuantity = (toolId) => {
-    setQuantities(prev => ({
-        ...prev,
-        [toolId]: Math.max((prev[toolId] || 1) - 1, 1),
-    }));
-};
+    const decreaseQuantity = (toolId) => {
+        setQuantities(prev => ({
+            ...prev,
+            [toolId]: Math.max((prev[toolId] || 1) - 1, 1),
+        }));
+    };
 
-   const handleBuy = async (toolId) => {
-     const tool = tools.find(t => t.id === toolId);
-    const productId = tool?.product_id;
+    const handleBuy = async (toolId) => {
+        const tool = tools.find(t => t.id === toolId);
+        const productId = tool?.product_id;
 
-    if (!productId) {
-        alert("Product ID не найден");
-        return;
-    }
+        if (!productId) {
+            alert("Product ID не найден");
+            return;
+        }
 
-    addToCart(productId, 1);
-    alert("Добавлено в корзину!");
-};
+        addToCart(productId, 1);
+        alert("Добавлено в корзину!");
+    };
 
     const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -181,6 +168,36 @@ const decreaseQuantity = (toolId) => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+            </div>
+            <div className="mb-3">
+                <label className="form-label">Фильтр по типу инструмента:</label>
+                <div className="d-flex gap-3 flex-wrap">
+                    <div>
+                        <input
+                            type="radio"
+                            id="all"
+                            name="typeFilter"
+                            value="all"
+                            checked={typeFilter === "all"}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                        />
+                        <label htmlFor="all" className="ms-1">Все</label>
+                    </div>
+                    {["фреза", "сверло", "развертка", "метчик"].map((type) => (
+                        <div key={type}>
+                            <input
+                                type="radio"
+                                id={type}
+                                name="typeFilter"
+                                value={type}
+                                checked={typeFilter === type}
+                                onChange={(e) => setTypeFilter(e.target.value)}
+                            />
+                            <label htmlFor={type}
+                                   className="ms-1">{type.charAt(0).toUpperCase() + type.slice(1)}</label>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {isLoading && <Loader/>}

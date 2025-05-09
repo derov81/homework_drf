@@ -1,8 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import "../Common/Common.css";
 import axios from "axios";
-
 
 
 const Header = ({user, onLogout, onLoginClick}) => {
@@ -17,26 +16,29 @@ const Header = ({user, onLogout, onLoginClick}) => {
                     'Authorization': `Bearer ${token}`
                 }
             })
-            .then(response => {
-                const items = response.data.items || [];
-                const total = items.reduce((acc, item) => acc + item.quantity, 0);
-                setCartCount(total);
-            })
-            .catch(error => {
-                console.error("Ошибка при загрузке корзины:", error);
-            });
+                .then(response => {
+                    const items = response.data.items || [];
+                    const total = items.reduce((acc, item) => acc + item.quantity, 0);
+                    setCartCount(total);
+                })
+                .catch(error => {
+                    console.error("Ошибка при загрузке корзины:", error);
+                });
         }
     }, []);
 
+
+
     return (
 
-        <header style={{
-            backgroundColor: '#f8f9fa',
+        <header className="bg-dark text-white text-center py-3 mt-0" style={{
+            backgroundColor: '#000',
+            color: '#FFF',
             padding: '10px 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            //boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
             <div className="logo">GROSVER TOOLS</div>
             <div>
@@ -54,6 +56,14 @@ const Header = ({user, onLogout, onLoginClick}) => {
                     </div>
                 </nav>
 
+            </div>
+            <div>
+            </div>
+            <div style={{marginInline: '30px'}}>
+                info@grosvertools.by
+            </div>
+            <div style={{color:'white'}}>
+                +375 (17) 555-55-55
             </div>
             <div>
                 <Link to="/cart" className="btn btn-outline-light position-relative">

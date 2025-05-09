@@ -1,15 +1,11 @@
 import React from "react";
 import './Home.css'
 import backgroundImage from './imageSection/fon_main.png';
-import {useNavigate} from 'react-router-dom';
+
 
 
 export default function Home({ setTab }) {
-    const navigate = useNavigate();
 
-    const handleClick = () => {
-        navigate('/');
-    };
     return (
         <section>
             <div className="hero"
