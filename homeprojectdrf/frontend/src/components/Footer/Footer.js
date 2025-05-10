@@ -2,9 +2,9 @@ import React from 'react';
 
 export default function Footer() {
     return (
-        <footer className="bg-dark text-white text-center py-3 mt-5"
+        <footer className=" text-white text-center py-3 mt-5"
         style={{
-            backgroundColor: '#000',
+            backgroundColor: '#1e3a8a',
             color: '#FFF',
             textAlign: 'center',
             padding: '10px, 0px',

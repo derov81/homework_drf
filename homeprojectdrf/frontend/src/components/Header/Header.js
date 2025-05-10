@@ -31,8 +31,8 @@ const Header = ({user, onLogout, onLoginClick}) => {
 
     return (
 
-        <header className="bg-dark text-white text-center py-3 mt-0" style={{
-            backgroundColor: '#000',
+        <header className=" text-white text-center py-3 mt-0" style={{
+            backgroundColor: '#1e3a8a',
             color: '#FFF',
             padding: '10px 20px',
             display: 'flex',
