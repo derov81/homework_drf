@@ -9,9 +9,7 @@ import Footer from "./components/Footer/Footer";
 import AboutSection from "./components/Sections/AboutSection";
 import CatalogSection from "./components/Sections/CatalogSection";
 import Home from "./components/Sections/Home";
-
-
-
+import CartPage from "./components/Cart/CartPage";
 
 
 const App = () => {
@@ -19,6 +17,7 @@ const App = () => {
     const [showLogin, setShowLogin] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [tab, setTab] = useState('main');
+    const [showCart, setShowCart] = useState(false);
 
 
     useEffect(() => {
@@ -53,6 +52,8 @@ const App = () => {
                 user={user}
                 onLogout={handleLogout}
                 onLoginClick={handleLoginClick}
+                setTab={setTab}
+                setShowCart={setShowCart}
             />
             <Login
                 show={showLogin}
@@ -60,19 +61,24 @@ const App = () => {
                 setShowLogin={setShowLogin}
             />
 
-            <main style={{marginLeft: '1rem'}}>
 
+            <main style={{marginLeft: '1rem'}}>
                 <TabsSection active={tab} onChange={(current) => setTab(current)}/>
+
                 {tab === 'main' && (
                     <>
                         {!selectedOrder && (
                             <Home onSelect={(orderId) => setSelectedOrder(orderId)}
-                            setTab={setTab}
+                                  setTab={setTab}
                             />
                         )}
                     </>
                 )}
-                {tab === 'catalog' && <CatalogSection/>}
+                {tab === 'catalog' && (
+                    showCart
+                        ? <CartPage setTab={setTab} setShowCart={setShowCart}/> // показываем корзину
+                        : <CatalogSection/>                                            // иначе каталог
+                )}
                 {tab === 'feedback' && <FeedbackSection/>}
                 {tab === 'admin_panel' && <AdminPanel/>}
                 {tab === 'about' && <AboutSection/>}

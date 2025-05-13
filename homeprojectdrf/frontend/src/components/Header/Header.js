@@ -2,12 +2,14 @@ import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import "../Common/Common.css";
 import axios from "axios";
+import {useCart} from '../Cart/CartContext';
 
 
-const Header = ({user, onLogout, onLoginClick}) => {
+const Header = ({user, onLogout, onLoginClick, setTab, setShowCart}) => {
 
     const [cartCount, setCartCount] = useState(0);
     const token = localStorage.getItem('token');
+    const {totalQuantity} = useCart(); // 👈 получаем общее количество товаров
 
     useEffect(() => {
         if (token) {
@@ -25,8 +27,7 @@ const Header = ({user, onLogout, onLoginClick}) => {
                     console.error("Ошибка при загрузке корзины:", error);
                 });
         }
-    }, []);
-
+    }, [user]);
 
 
     return (
@@ -62,16 +63,40 @@ const Header = ({user, onLogout, onLoginClick}) => {
             <div style={{marginInline: '30px'}}>
                 info@grosvertools.by
             </div>
-            <div style={{color:'white'}}>
+            <div style={{color: 'white'}}>
                 +375 (17) 555-55-55
             </div>
-            <div>
-                <Link to="/cart" className="btn btn-outline-light position-relative">
+            <div style={{position: 'relative', display: 'inline-block'}}>
+                <button
+                    onClick={() => {
+                        setTab('catalog');
+                        setShowCart(true);
+                    }}
+                    className="btn btn-outline-light"
+                    style={{position: 'relative'}}
+                >
                     🛒
-                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {cartCount}
-                    </span>
-                </Link>
+                </button>
+
+                {/* Счётчик */}
+                {totalQuantity > 0 && (
+                    <span
+                        style={{
+                            position: 'absolute',
+                            top: '-5px',
+                            right: '-5px',
+                            background: 'red',
+                            color: 'white',
+                            borderRadius: '50%',
+                            padding: '3px 6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            lineHeight: '1',
+                        }}
+                    >
+      {totalQuantity}
+    </span>
+                )}
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
                 {user ? (
