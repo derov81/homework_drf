@@ -1,11 +1,4 @@
-.footer{
-    background-color: #000;
-    color: #FFF;
-    text-align: center;
-    padding: 10px 0px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 20px;
-}
+
 .loader {
     border: 16px solid #f3f3f3;
     border-radius: 50%;

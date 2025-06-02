@@ -14,6 +14,11 @@ export default function TabsSection({active, onChange}) {
                 <Button isActive={active === 'feedback'} onClick={() => onChange('feedback')}>Обратная связь</Button>
             )}
 
+            {/* Показывать вкладку "Кабинет пользователя", если пользователь НЕ админ */}
+            {(userAdmin && userAdmin.username !== 'admin') && (
+                <Button isActive={active === 'cabinet'} onClick={() => onChange('cabinet')}>Кабинет пользователя</Button>
+            )}
+
             {/* Вкладка "Административная панель" только для админа */}
             {userAdmin && userAdmin.username === 'admin' && (
                 <Button isActive={active === 'admin_panel'} onClick={() => onChange('admin_panel')}>Административная панель</Button>

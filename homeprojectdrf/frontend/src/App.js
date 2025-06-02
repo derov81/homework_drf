@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import Login from './components/Login/Login';
 import authService from './components/services/authService';
@@ -10,6 +10,7 @@ import AboutSection from "./components/Sections/AboutSection";
 import CatalogSection from "./components/Sections/CatalogSection";
 import Home from "./components/Sections/Home";
 import CartPage from "./components/Cart/CartPage";
+import UserCabinetSection from "./components/Sections/UserCabenSetection";
 
 
 const App = () => {
@@ -21,16 +22,16 @@ const App = () => {
 
 
     useEffect(() => {
-        // При загрузке страницы проверяем наличие пользователя
+        // Check for a saved user when the app loads
         const savedUser = authService.getCurrentUser();
         if (savedUser) {
             setUser(savedUser);
-            setShowLogin(false); // Явно скрываем форму, если пользователь авторизован
+            setShowLogin(false); // Hide login form if the user is already authenticated
         }
     }, []);
 
     const handleLoginSuccess = (userData) => {
-        console.log('Успешный вход:', userData);
+        console.log('Successful login:', userData);
         setUser(userData);
         setShowLogin(false);
     };
@@ -38,11 +39,11 @@ const App = () => {
     const handleLogout = () => {
         authService.logout();
         setUser(null);
-        setShowLogin(false); // Скрываем форму при выходе
+        setShowLogin(false); // Hide login form after logout
     };
 
     const handleLoginClick = () => {
-        console.log('Открытие формы входа');
+        console.log('Opening login form');
         setShowLogin(true);
     };
 
@@ -55,36 +56,33 @@ const App = () => {
                 setTab={setTab}
                 setShowCart={setShowCart}
             />
-            <Login
-                show={showLogin}
-                onLoginSuccess={handleLoginSuccess}
-                setShowLogin={setShowLogin}
-            />
+            {showLogin && (
+                <Login
+                    show={showLogin}
+                    onLoginSuccess={handleLoginSuccess}
+                    setShowLogin={setShowLogin}
+                />
+            )}
 
+            <main className="main-content">
+                <TabsSection active={tab} onChange={(current) => setTab(current)} />
 
-            <main style={{marginLeft: '1rem'}}>
-                <TabsSection active={tab} onChange={(current) => setTab(current)}/>
-
-                {tab === 'main' && (
-                    <>
-                        {!selectedOrder && (
-                            <Home onSelect={(orderId) => setSelectedOrder(orderId)}
-                                  setTab={setTab}
-                            />
-                        )}
-                    </>
+                {tab === 'main' && !selectedOrder && (
+                    <Home onSelect={(orderId) => setSelectedOrder(orderId)} setTab={setTab} />
                 )}
+
                 {tab === 'catalog' && (
                     showCart
-                        ? <CartPage setTab={setTab} setShowCart={setShowCart}/> // показываем корзину
-                        : <CatalogSection/>                                            // иначе каталог
+                        ? <CartPage setTab={setTab} setShowCart={setShowCart}/> // Show CartPage if cart is shown
+                        : <CatalogSection />  // Otherwise, show Catalog
                 )}
-                {tab === 'feedback' && <FeedbackSection/>}
-                {tab === 'admin_panel' && <AdminPanel/>}
-                {tab === 'about' && <AboutSection/>}
 
+                {tab === 'feedback' && <FeedbackSection />}
+                {tab === 'cabinet' && <UserCabinetSection />}
+                {tab === 'admin_panel' && <AdminPanel />}
+                {tab === 'about' && <AboutSection />}
             </main>
-            <Footer/>
+            <Footer />
         </div>
     );
 };

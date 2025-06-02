@@ -1,6 +1,8 @@
 import django_filters
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from  . models import Tool
+from rest_framework.views import APIView
+
+from .models import Tool, UserProfile
 from .serializers import ToolSeralizer
 from rest_framework import viewsets
 from rest_framework import filters
@@ -18,6 +20,7 @@ from .serializers import FeedbackSerializer
 from django.core.mail import EmailMessage, send_mail
 from .models import Product, Order, OrderItem
 from .serializers import ProductSerializer, OrderSerializer
+
 
 
 
@@ -43,6 +46,10 @@ def register_user(request):
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
+
+        # serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()  # 👈 создаёт User и UserProfile
 
         if not username or not password:
             return Response(
@@ -207,4 +214,39 @@ class OrderViewSet(viewsets.ViewSet):
             return Response({"error": "Товар не найден в корзине"}, status=status.HTTP_404_NOT_FOUND)
         except Order.DoesNotExist:
             return Response({"error": "Нет активного заказа"}, status=status.HTTP_404_NOT_FOUND)
+
+class UserCabinetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Создаём профиль, если его нет
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        # Тоже создаём профиль, если нет
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        serializer = UserSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+    # @api_view(['POST'])
+    # def post(self, request, *args, **kwargs):
+    #     serializer = UserSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #
+    #     user_profile = User.objects.filter(user=request.user, is_ordered=False).first()
+    #     try:
+    #         if user_profile:
+    #             #user_profile.is_ordered = True
+    #             user_profile.save()
+    #             return Response({"message": "Данные пользователя добавленны"}, status=status.HTTP_200_OK)
+    #     except Order.DoesNotExist:
+    #         return Response({"error": "Нет активного заказа"}, status=status.HTTP_404_NOT_FOUND)
 

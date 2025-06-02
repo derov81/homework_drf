@@ -1,111 +1,152 @@
-import React, {useEffect} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import './CheckoutPage.css';
-import {useCart} from './CartContext';
-
+import { useCart } from './CartContext';
+import axios from 'axios';
 
 const CheckoutPage = () => {
-    const navigate = useNavigate();
-    const {cartItems, fetchCart} = useCart();
+  const navigate = useNavigate();
+  const { cartItems, fetchCart } = useCart();
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [loading, setLoading] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
-    const totalSum = cartItems.reduce((acc, item) => acc + item.quantity * item.product.price, 0);
+  const totalSum = cartItems.reduce(
+    (acc, item) => acc + item.quantity * item.product.price,
+    0
+  );
 
-    const thStyle = {
-        textAlign: 'left',
-        padding: '10px',
-        backgroundColor: '#f5f5f5',
-        borderBottom: '2px solid #ddd'
-    };
+  const handlePlaceOrder = async () => {
+    if (!paymentMethod) {
+      alert('Пожалуйста, выберите способ оплаты.');
+      return;
+    }
 
-    const tdStyle = {
-        padding: '10px',
-        verticalAlign: 'middle'
-    };
+    setLoading(true);
+    try {
+      await axios.post(
+        'http://127.0.0.1:8000/api/cart/checkout/',
+        { payment_method: paymentMethod }, // ← добавь, если нужно
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setOrderPlaced(true);
+      await fetchCart(); // обновляем корзину (будет пустая после заказа)
+    } catch (error) {
+      console.error('Ошибка при оформлении заказа:', error);
+      alert('Не удалось оформить заказ');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleGoBack = () => {
+    navigate('/');
+  };
+
+  if (orderPlaced) {
     return (
-        <div className="checkout-container">
-            <Link to={'/'}>В каталог</Link>
-            <h2>Оформление заказа</h2>
-            <div className="checkout-content">
-                <div className="cart-summary">
-                    <h3>Ваш заказ:</h3>
-                    {cartItems.length === 0 ? (
-                        <p>Корзина пуста.</p>
-                    ) : (
-                        <table style={{width: '100%', borderCollapse: 'collapse', marginTop: '20px'}}>
-                            <thead>
-                            <tr>
-                                <th style={thStyle}>Товар</th>
-                                <th style={thStyle}>Кол-во</th>
-                                <th style={thStyle}>Цена за шт.</th>
-                                <th style={thStyle}>Сумма</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {cartItems.map((item, index) => (
-                                <tr key={index} style={{borderBottom: '1px solid #ddd'}}>
-                                    <td style={tdStyle}>
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                                            {item.product?.image && (
-                                                <img
-                                                    src={item.product.image}
-                                                    alt={item.product?.brand_tool || item.product?.name || 'Товар'}
-                                                    style={{
-                                                        width: '50px',
-                                                        height: '50px',
-                                                        objectFit: 'cover',
-                                                        borderRadius: '8px'
-                                                    }}
-                                                />
-                                            )}
-                                            <span>{item.product?.brand_tool || item.product?.name || 'Без названия'}</span>
-                                        </div>
-                                    </td>
-                                    <td style={tdStyle}>{item.quantity}</td>
-                                    <td style={tdStyle}>{item.product?.price}₽</td>
-                                    <td style={tdStyle}>{item.quantity * item.product?.price}₽</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    )}
-                    <div className="total">
-                        <strong>Итого: {totalSum}₽</strong>
-                    </div>
-                    <div style={{marginTop: '30px'}}>
-                        <h3>Способ оплаты:</h3>
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px'}}>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="card" defaultChecked/> Банковская карта
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="cash"/> Наличные
-                            </label>
-                        </div>
-
-                        <button
-                            onClick={() => alert("Оплата пока только в тестовом режиме 😅")}
-                            style={{
-                                padding: '12px 24px',
-                                backgroundColor: '#007bff',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                fontSize: '16px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Приступить к оплате
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="checkout-container">
+        <h2>✅ Заказ успешно оформлен!</h2>
+        <p>Спасибо за покупку.</p>
+        <button className="btn btn-primary" onClick={handleGoBack}>
+          ← Вернуться в каталог
+        </button>
+      </div>
     );
+  }
+
+  return (
+    <div className="checkout-container">
+      <Link to="/">← В каталог</Link>
+      <h2>Оформление заказа</h2>
+      <div className="checkout-content">
+        <div className="cart-summary">
+          <h3>Ваш заказ:</h3>
+          {loading ? (
+            <p>Загружаем данные...</p>
+          ) : cartItems.length === 0 ? (
+            <p>Корзина пуста.</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+              <thead>
+                <tr>
+                  <th>Товар</th>
+                  <th>Кол-во</th>
+                  <th>Цена</th>
+                  <th>Сумма</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.product?.name}</td>
+                    <td>{item.quantity}</td>
+                    <td>{item.product?.price}₽</td>
+                    <td>{item.quantity * item.product?.price}₽</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <div className="total">
+            <strong>Итого: {totalSum}₽</strong>
+          </div>
+
+          <div style={{ marginTop: '30px' }}>
+            <h3>Способ оплаты:</h3>
+            <label>
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="card"
+                checked={paymentMethod === 'card'}
+                onChange={() => setPaymentMethod('card')}
+              />{' '}
+              Банковская карта
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="cash"
+                checked={paymentMethod === 'cash'}
+                onChange={() => setPaymentMethod('cash')}
+              />{' '}
+              Наличные
+            </label>
+          </div>
+
+          <button
+            onClick={handlePlaceOrder}
+            disabled={loading || cartItems.length === 0}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '16px',
+            }}
+          >
+            {loading ? 'Оформляем...' : '✅ Подтвердить заказ'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CheckoutPage;

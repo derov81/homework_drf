@@ -120,13 +120,13 @@ const handleBuy = async (toolId) => {
                   } ₽
           </div>
           <div>
-              <button className="btn btn-sm btn-outline-secondary"
-                      onClick={() => decreaseQuantity(tool.id)}>-
-              </button>
-              <span>{quantities[tool.id] || 1}</span>
-              <button className="btn btn-sm btn-outline-secondary"
-                      onClick={() => increaseQuantity(tool.id)}>+
-              </button>
+              {/*<button className="btn btn-sm btn-outline-secondary"*/}
+              {/*        onClick={() => decreaseQuantity(tool.id)}>-*/}
+              {/*</button>*/}
+              {/*<span>{quantities[tool.id] || 1}</span>*/}
+              {/*<button className="btn btn-sm btn-outline-secondary"*/}
+              {/*        onClick={() => increaseQuantity(tool.id)}>+*/}
+              {/*</button>*/}
               <button
                   className="btn btn-success btn-sm"
                   onClick={() => handleBuy(tool.id)}

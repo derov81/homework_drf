@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 export default function CartBadge() {
     const { cart } = useCart();
+
+    
     return (
         <Link to="/cart" className="btn btn-outline-primary position-relative">
             🛒

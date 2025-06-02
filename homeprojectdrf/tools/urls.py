@@ -8,6 +8,7 @@ from .views import SliderImageListCreate, SliderImageDelete
 from .views import UserListView, UserDetailView
 from .views import FeedbackViewSet
 from .views import ProductViewSet, OrderViewSet
+from .views import UserCabinetView
 
 
 
@@ -15,6 +16,7 @@ router = routers.DefaultRouter()
 router.register('tools', ToolViewSet)
 router.register('feedback', FeedbackViewSet)
 router.register('products', ProductViewSet, basename='product')
+#router.register('cabinet', UserCabinetView)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -29,6 +31,7 @@ urlpatterns = [
 # API для работы с пользователями
     path('users/', UserListView.as_view(), name='user-list'),  # Получение списка пользователей
     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),  # Детали пользователя (редактирование/удаление)
+    path('cabinet/', UserCabinetView.as_view(), name='user-cabinet'),
 
     path('cart/', OrderViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('cart/checkout/', OrderViewSet.as_view({'post': 'post'})),

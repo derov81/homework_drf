@@ -10,6 +10,7 @@ import CheckoutPage from "../Cart/CheckoutPage";
 
 
 
+
 export default function CatalogSection(){
 
     return(

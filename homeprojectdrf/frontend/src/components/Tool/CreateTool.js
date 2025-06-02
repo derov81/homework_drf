@@ -210,17 +210,6 @@ const CreateTool = () => {
                         />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Краткое описание</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="short_description"
-                            name="short_description"
-                            value={tool.short_description}
-                            onChange={handleInput}
-                        />
-                    </div>
-                    <div className="mb-3">
                         <label className="form-label">Описание</label>
                         <textarea
                             className="form-control"

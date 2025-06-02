@@ -1,9 +1,9 @@
+
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import {useParams, useNavigate, Link} from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Loader from "../Common/Loader";
 import "./Tool.css";
-
 
 const EditTool = () => {
   const [tool, setTool] = useState({});
@@ -17,20 +17,20 @@ const EditTool = () => {
 
   useEffect(() => {
     getTool();
-  }, [id]);  // Добавляем зависимость, чтобы запрос выполнялся только при изменении id
+  }, [id]);
 
   useEffect(() => {
-  if (tool.product_id) {
-    axios
-      .get(`${API_PRODUCT}${tool.product_id}/`)
-      .then((response) => {
-        setProduct(response.data);
-      })
-      .catch((err) => {
-        console.error("Ошибка загрузки продукта:", err);
-      });
-  }
-}, [tool.product_id]);
+    if (tool.product_id) {
+      axios
+        .get(`${API_PRODUCT}${tool.product_id}/`)
+        .then((response) => {
+          setProduct(response.data);
+        })
+        .catch((err) => {
+          console.error("Ошибка загрузки продукта:", err);
+        });
+    }
+  }, [tool.product_id]);
 
   const getTool = () => {
     axios
@@ -43,100 +43,73 @@ const EditTool = () => {
       });
   };
 
-  const handelInput = (e) => {
-    e.preventDefault();
+  const handleInput = (e) => {
     const { name, value } = e.target;
     setTool({ ...tool, [name]: value });
   };
 
-  const handelInputProduct = (e) => {
-    e.preventDefault();
+  const handleInputProduct = (e) => {
     const { name, value } = e.target;
-    setProduct({...product, [name]: value});
-  };
-
-  const handelSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    axios.put(`${getToolApi}${id}/`, tool, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((response) => {
-        console.log("Инструмент обновлен:", response.data);
-        navigate("/");
-      })
-      .catch((error) => {
-      // Проверка, если ошибка - это объект с ключом detail
-      const errorMessage = error.response?.data?.detail || error.message;
-      setError(errorMessage);  // Устанавливаем строку ошибки
-      setIsLoading(false);
-    });
-  };
-
-  const handelSubmitProduct = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    axios.put(`${API_PRODUCT}${product.id}/`, product, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((response) => {
-        console.log("Инструмент обновлен:", response.data);
-        navigate("/");
-      })
-      .catch((error) => {
-      // Проверка, если ошибка - это объект с ключом detail
-      const errorMessage = error.response?.data?.detail || error.message;
-      setError(errorMessage);  // Устанавливаем строку ошибки
-      setIsLoading(false);
-    });
+    setProduct({ ...product, [name]: value });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setTool((prev) => ({
-        ...prev,
-        image_url: file,
+      ...prev,
+      image_url: file,
     }));
-};
+  };
 
+  const handleCombinedSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      for (const key in tool) {
+        formData.append(key, tool[key]);
+      }
+
+      await axios.put(`${getToolApi}${id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      await axios.put(`${API_PRODUCT}${product.id}/`, product, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      navigate("/");
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || error.message;
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="tool-form">
-      <Link to={'/'}>В каталог</Link>
+      <Link to="/">В каталог</Link>
       <div className="heading">
         {isLoading && <Loader />}
-        {error && <p>Error: {error}</p>}
+        {error && <p className="error-message">Ошибка: {error}</p>}
         <p>Форма для редактирования</p>
       </div>
-      <form onSubmit={handelSubmit}>
+      <form onSubmit={handleCombinedSubmit}>
         <div className="mb-3">
-          <label htmlFor="brand_tool" className="form-label">Бренд</label>
-          <input
-              type="text"
-              className="form-control"
-              id="brand_tool"
-              name="brand_tool"
-              value={tool.brand_tool || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Бренд</label>
+          <input type="text" name="brand_tool" value={tool.brand_tool || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="type_tool" className="form-label">Тип инструмента</label>
-          <select
-              className="form-control"
-              id="type_tool"
-              name="type_tool"
-              value={tool.type_tool || ''}
-              onChange={handelInput}
-          >
+          <label className="form-label">Тип инструмента</label>
+          <select name="type_tool" value={tool.type_tool || ""} onChange={handleInput} className="form-control">
             <option value="">-- Выберите тип --</option>
             <option value="фреза">Фреза</option>
             <option value="сверло">Сверло</option>
@@ -145,106 +118,38 @@ const EditTool = () => {
           </select>
         </div>
         <div className="mb-3">
-          <label htmlFor="working_length_tool" className="form-label">Диаметр инструмента</label>
-          <input
-              type="number"
-              className="form-control"
-              id="diametr"
-              name="diametr"
-              value={tool.diametr || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Диаметр</label>
+          <input type="number" name="diametr" value={tool.diametr || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="working_length_tool" className="form-label">Рабочая днина</label>
-          <input
-              type="number"
-              className="form-control"
-              id="working_length_tool"
-              name="working_length_tool"
-              value={tool.working_length_tool || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Рабочая длина</label>
+          <input type="number" name="working_length_tool" value={tool.working_length_tool || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="length_tool" className="form-label">Длина инструмента</label>
-          <input
-              type="number"
-              className="form-control"
-              id="length_tool"
-              name="length_tool"
-              value={tool.length_tool || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Длина инструмента</label>
+          <input type="number" name="length_tool" value={tool.length_tool || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="material_of_detail" className="form-label">Материал заготовки</label>
-          <input
-              type="text"
-              className="form-control"
-              id="material_of_detail"
-              name="material_of_detail"
-              value={tool.material_of_detail || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Материал заготовки</label>
+          <input type="text" name="material_of_detail" value={tool.material_of_detail || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="material_of_tool" className="form-label">Материал инструмента</label>
-          <input
-              type="text"
-              className="form-control"
-              id="material_of_tool"
-              name="material_of_tool"
-              value={tool.material_of_tool || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Материал инструмента</label>
+          <input type="text" name="material_of_tool" value={tool.material_of_tool || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="short_description" className="form-label">Краткое описание</label>
-          <input
-              type="text"
-              className="form-control"
-              id="short_description"
-              name="short_description"
-              value={tool.short_description || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Описание</label>
+          <textarea name="description" value={tool.description || ""} onChange={handleInput} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">Oписание</label>
-          <textarea
-              className="form-control"
-              id="description"
-              name="description"
-              value={tool.description || ''}
-              onChange={handelInput}
-          />
+          <label className="form-label">Фото</label>
+          <input type="file" name="image_url" accept="image/*" onChange={handleImageChange} className="form-control" />
         </div>
         <div className="mb-3">
-          <label htmlFor="image_url" className="form-label">Фото</label>
-          <input
-              type="file"
-              className="form-control"
-              name="image_url"
-              accept="image/jpeg, image/png, image/gif"
-              onChange={handleImageChange}
-          />
+          <label className="form-label">Цена</label>
+          <input type="number" name="price" value={product.price || ""} onChange={handleInputProduct} className="form-control" />
         </div>
-        <button type="submit" className="btn btn-primary submit-btn">Сохранить изменения</button>
-      </form>
-      <form onSubmit={handelSubmitProduct}>
-        <div className="mb-3">
-          <label htmlFor="price" className="form-label">Цена</label>
-          <input
-              type="number"
-              className="form-control"
-              id="price"
-              name="price"
-              value={product.price || ''}
-              onChange={handelInputProduct}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary submit-btn">Сохранить изменения</button>
+        <button type="submit" className="btn btn-primary">Сохранить изменения</button>
       </form>
     </div>
   );
