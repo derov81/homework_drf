@@ -24,7 +24,7 @@ const LoginWithGoogle = () => {
 
   return (
     <div>
-      <h3>Войти через Google</h3>
+      {/*<h3>Войти через Google</h3>*/}
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={() => console.log('Ошибка Google входа')}

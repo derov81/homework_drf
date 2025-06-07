@@ -34,7 +34,7 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -197,3 +197,11 @@ SIMPLE_JWT = {
 
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # Для TLS
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'maniprutby@gmail.com'  # Ваш Gmail
+EMAIL_HOST_PASSWORD = 'Derovyaroslav81'  # Пароль приложения (не основной пароль!)
+

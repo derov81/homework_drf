@@ -5,5 +5,5 @@ class ToolsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'tools'
 
-    def ready(self):
-        from . import signals
+    # def ready(self):
+    #     from . import signals
