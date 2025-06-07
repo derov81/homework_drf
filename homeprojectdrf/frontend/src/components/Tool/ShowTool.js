@@ -199,12 +199,15 @@ export default function ShowTool() {
                       <i className="fa fa-trash"></i>
                     </button>
                   )}
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => handleBuy(tool.id)}
-                  >
-                    Купить
-                  </button>
+                  {user && (
+                      <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleBuy(tool.id)}
+                      >
+                        Купить
+                      </button>
+                  )}
+
                 </div>
               </td>
             </tr>

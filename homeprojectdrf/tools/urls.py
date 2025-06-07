@@ -9,6 +9,7 @@ from .views import UserListView, UserDetailView
 from .views import FeedbackViewSet
 from .views import ProductViewSet, OrderViewSet
 from .views import UserCabinetView
+from .views import GoogleLoginAPIView
 
 
 
@@ -16,7 +17,6 @@ router = routers.DefaultRouter()
 router.register('tools', ToolViewSet)
 router.register('feedback', FeedbackViewSet)
 router.register('products', ProductViewSet, basename='product')
-#router.register('cabinet', UserCabinetView)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -37,4 +37,10 @@ urlpatterns = [
     path('cart/checkout/', OrderViewSet.as_view({'post': 'post'})),
     path('cart/<int:product_id>/', OrderViewSet.delete_cart_item),
     path('cart/update/', OrderViewSet.as_view({'patch': 'update_quantity'})),
+
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/auth/', include('allauth.socialaccount.urls')),  # Google OAuth
+
+    path("google-login/", GoogleLoginAPIView.as_view(), name="google-login"),
 ]

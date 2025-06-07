@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import "./Tool.css";
+import AuthService from "../services/authService";
 
 const Tool = () => {
   const [tool, setTool] = useState([]);
@@ -12,6 +13,8 @@ const Tool = () => {
   const API_PRODUCT = "http://127.0.0.1:8000/api/products/";
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
+
+  const user = AuthService.getCurrentUser();
 
   useEffect(() => {
     getTool();
@@ -114,31 +117,29 @@ const handleBuy = async (toolId) => {
         <div className="col-md-7">
           <p className="lead">{tool.description}</p>
         </div>
-          <div>
+          {user && (
+              <div>
                   {
                       products.find(p => p.id === tool.product_id)?.price ?? 0.00
                   } ₽
-          </div>
+              </div>
+          )}
+
           <div>
-              {/*<button className="btn btn-sm btn-outline-secondary"*/}
-              {/*        onClick={() => decreaseQuantity(tool.id)}>-*/}
-              {/*</button>*/}
-              {/*<span>{quantities[tool.id] || 1}</span>*/}
-              {/*<button className="btn btn-sm btn-outline-secondary"*/}
-              {/*        onClick={() => increaseQuantity(tool.id)}>+*/}
-              {/*</button>*/}
-              <button
-                  className="btn btn-success btn-sm"
-                  onClick={() => handleBuy(tool.id)}
-              >
-                  Купить
-              </button>
+              {user && (
+                  <button
+                      className="btn btn-success btn-sm"
+                      onClick={() => handleBuy(tool.id)}
+                  >
+                      Купить
+                  </button>
+              )}
           </div>
       </div>
 
         {/* Модальное окно для увеличенного изображения */}
         <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static">
-            <Modal.Body className="text-center p-0">
+        <Modal.Body className="text-center p-0">
                 <img
                     src={tool.image_url}
                     alt="Увеличенное изображение"

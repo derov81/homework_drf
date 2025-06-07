@@ -1,4 +1,5 @@
 import React from 'react';
+import LoginWithGoogle from "../Login/LoginWithGoogle";
 
 export default function Footer() {
     return (
@@ -13,6 +14,7 @@ export default function Footer() {
         }}
         >
             <small>© {new Date().getFullYear()} Разработчик: Yaroslav Derov</small>
+            <LoginWithGoogle/>
         </footer>
     );
 }

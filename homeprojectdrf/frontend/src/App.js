@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import Header from './components/Header/Header';
 import Login from './components/Login/Login';
 import authService from './components/services/authService';
@@ -11,6 +11,7 @@ import CatalogSection from "./components/Sections/CatalogSection";
 import Home from "./components/Sections/Home";
 import CartPage from "./components/Cart/CartPage";
 import UserCabinetSection from "./components/Sections/UserCabenSetection";
+
 
 
 const App = () => {
@@ -48,7 +49,9 @@ const App = () => {
     };
 
     return (
+
         <div>
+
             <Header
                 user={user}
                 onLogout={handleLogout}
@@ -65,24 +68,24 @@ const App = () => {
             )}
 
             <main className="main-content">
-                <TabsSection active={tab} onChange={(current) => setTab(current)} />
+                <TabsSection active={tab} onChange={(current) => setTab(current)}/>
 
                 {tab === 'main' && !selectedOrder && (
-                    <Home onSelect={(orderId) => setSelectedOrder(orderId)} setTab={setTab} />
+                    <Home onSelect={(orderId) => setSelectedOrder(orderId)} setTab={setTab}/>
                 )}
 
                 {tab === 'catalog' && (
                     showCart
                         ? <CartPage setTab={setTab} setShowCart={setShowCart}/> // Show CartPage if cart is shown
-                        : <CatalogSection />  // Otherwise, show Catalog
+                        : <CatalogSection/>  // Otherwise, show Catalog
                 )}
 
-                {tab === 'feedback' && <FeedbackSection />}
-                {tab === 'cabinet' && <UserCabinetSection />}
-                {tab === 'admin_panel' && <AdminPanel />}
-                {tab === 'about' && <AboutSection />}
+                {tab === 'feedback' && <FeedbackSection/>}
+                {tab === 'cabinet' && <UserCabinetSection/>}
+                {tab === 'admin_panel' && <AdminPanel/>}
+                {tab === 'about' && <AboutSection/>}
             </main>
-            <Footer />
+            <Footer/>
         </div>
     );
 };

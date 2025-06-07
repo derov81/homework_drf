@@ -21,6 +21,17 @@ from django.core.mail import EmailMessage, send_mail
 from .models import Product, Order, OrderItem
 from .serializers import ProductSerializer, OrderSerializer
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 
 
 
@@ -46,10 +57,6 @@ def register_user(request):
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
-
-        # serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()  # 👈 создаёт User и UserProfile
 
         if not username or not password:
             return Response(
@@ -232,21 +239,45 @@ class UserCabinetView(APIView):
             serializer.save()
             return Response(serializer.data)
 
-    # @api_view(['POST'])
-    # def post(self, request, *args, **kwargs):
-    #     serializer = UserSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #
-    #     user_profile = User.objects.filter(user=request.user, is_ordered=False).first()
-    #     try:
-    #         if user_profile:
-    #             #user_profile.is_ordered = True
-    #             user_profile.save()
-    #             return Response({"message": "Данные пользователя добавленны"}, status=status.HTTP_200_OK)
-    #     except Order.DoesNotExist:
-    #         return Response({"error": "Нет активного заказа"}, status=status.HTTP_404_NOT_FOUND)
 
+class GoogleLoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Token is required'}, status=400)
+
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                requests.Request(),
+                GOOGLE_CLIENT_ID
+            )
+
+            email = idinfo['email']
+            name = idinfo.get("name", email.split("@")[0])
+            username = name.replace(" ", "").lower()
+
+            # Уникальное имя
+            base_username = username
+            i = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{i}"
+                i += 1
+
+            user, created = User.objects.get_or_create(email=email, defaults={'username': username})
+
+            # Профиль
+            UserProfile.objects.get_or_create(user=user)
+
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'username': user.username,
+                'email': user.email,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            })
+
+        except ValueError:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
