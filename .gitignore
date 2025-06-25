@@ -6,3 +6,4 @@ package-lock.json
 /frontend/node_modules/
 /homeprojectdrf/homeprojectdrf/__pycache__
 /homeprojectdrf/tools/__pycache__
+homeprojectdrf/db.sqlite3
