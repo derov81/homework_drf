@@ -4,3 +4,4 @@ package.json
 package-lock.json
 ../db.sqlite3
 /frontend/node_modules/
+/homeprojectdrf/homeprojectdrf/__pycache__
