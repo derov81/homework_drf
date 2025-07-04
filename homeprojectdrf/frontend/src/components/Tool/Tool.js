@@ -126,7 +126,7 @@ const handleBuy = async (toolId) => {
           )}
 
           <div>
-              {user && (
+              {user && user.username !== 'admin' &&(
                   <button
                       className="btn btn-success btn-sm"
                       onClick={() => handleBuy(tool.id)}

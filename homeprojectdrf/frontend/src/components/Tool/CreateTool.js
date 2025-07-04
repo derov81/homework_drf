@@ -1,16 +1,14 @@
-import React, {useState} from "react";
-import {Link, useNavigate} from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Loader from "../Common/Loader";
-import './Tool.css'
+import './Tool.css';
 import axios from "axios";
-
-
 
 const CreateTool = () => {
     const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [tool, setTool] = useState({
+    const [formData, setFormData] = useState({
         brand_tool: '',
         type_tool: '',
         diametr: '',
@@ -20,21 +18,25 @@ const CreateTool = () => {
         material_of_tool: '',
         short_description: '',
         description: '',
-        image_url: '',
-    });
-    const [product, setProduct] = useState({
         price: '',
+        image_file: null
     });
 
+    const toolTypes = [
+        { value: '', label: '-- Выберите тип --' },
+        { value: 'фреза', label: 'Фреза' },
+        { value: 'сверло', label: 'Сверло' },
+        { value: 'развертка', label: 'Развертка' },
+        { value: 'метчик', label: 'Метчик' }
+    ];
 
-    const handleInput = (event) => {
-        const {name, value} = event.target;
-        setTool(prev => ({...prev, [name]: value}));
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleInputProduct = (event) => {
-        const {name, value} = event.target;
-        setProduct(prev => ({...prev, [name]: value}));
+    const handleFileChange = (e) => {
+        setFormData(prev => ({ ...prev, image_file: e.target.files[0] }));
     };
 
     const handleSubmit = async (event) => {
@@ -44,228 +46,248 @@ const CreateTool = () => {
 
         try {
             const token = localStorage.getItem('token');
-            console.log('Используемый токен:', token);
-
             if (!token) {
                 throw new Error('Необходима авторизация');
             }
 
-            const formData = new FormData();
-            for (const key in tool) {
-                formData.append(key, tool[key]);
-            }
-            formData.append("price", product.price);
+            const formDataToSend = new FormData();
 
-            console.log('Отправляемые данные:', tool); // Логируем данные перед отправкой
+            // Append all fields except the file
+            Object.keys(formData).forEach(key => {
+                if (key !== 'image_file' && formData[key] !== null && formData[key] !== '') {
+                    formDataToSend.append(key, formData[key]);
+                }
+            });
+
+            // Append the file if it exists
+            if (formData.image_file) {
+                formDataToSend.append('image_url', formData.image_file);
+            }
 
             const response = await axios.post(
                 'http://127.0.0.1:8000/api/tools/',
-                formData,
+                formDataToSend,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Authorization': `Bearer ${token}`,
                     },
                 }
             );
-
-            console.log('Ответ сервера:', response); // Логируем ответ сервера
 
             if (response.status === 201) {
                 navigate("/");
             }
         } catch (err) {
             console.error('Ошибка при создании инструмента:', err);
-            console.log('Ответ от сервера:', err.response?.data); // Для получения подробной ошибки
-            setError(err.response?.data?.detail || err.message || 'Произошла ошибка при создании инструмента');
+            const errorMessage = err.response?.data?.detail ||
+                               err.response?.data?.message ||
+                               err.message ||
+                               'Произошла ошибка при создании инструмента';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
     };
 
+    const requiredFields = [
+        'brand_tool', 'type_tool', 'diametr',
+        'working_length_tool', 'length_tool',
+        'material_of_detail', 'material_of_tool'
+    ];
 
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        setTool((prev) => ({
-            ...prev,
-            image_url: file,
-            //src: require('./media/images/nophot.jpg').default,
-        }));
+    const isFormValid = () => {
+        return requiredFields.every(field => formData[field] && formData[field].trim() !== '');
     };
+
     return (
         <div className='tool-form'>
-            <Link to={'/'}>В каталог</Link>
+            <Link to={'/'} className="back-link">В каталог</Link>
             <div className='heading'>
-                {isLoading && <Loader/>}
-                {error && <p>Error: {error}</p>}
-                <p>Добавить новый инструмент</p>
-            </div>
-            <div className="card-body">
-                {isLoading && <Loader/>}
+                <h2>Добавить новый инструмент</h2>
+                {isLoading && <Loader />}
                 {error && (
                     <div className="alert alert-danger" role="alert">
                         {error}
                     </div>
                 )}
+            </div>
 
+            <div className="card-body">
                 <form onSubmit={handleSubmit}>
+                    {/* Brand Input */}
                     <div className="mb-3">
-                        <label className="form-label">Бренд*</label>
+                        <label htmlFor="brand_tool" className="form-label">Бренд*</label>
                         <input
                             type="text"
                             className="form-control"
                             id="brand_tool"
                             name="brand_tool"
-                            value={tool.brand_tool}
-                            onChange={handleInput}
+                            value={formData.brand_tool}
+                            onChange={handleInputChange}
                             required
                         />
                     </div>
 
+                    {/* Tool Type Select */}
                     <div className="mb-3">
-                        <label className="form-label">Тип инструмента*</label>
+                        <label htmlFor="type_tool" className="form-label">Тип инструмента*</label>
                         <select
                             className="form-control"
                             id="type_tool"
                             name="type_tool"
-                            value={tool.type_tool}
-                            onChange={handleInput}
+                            value={formData.type_tool}
+                            onChange={handleInputChange}
                             required
                         >
-                            <option value="">-- Выберите тип --</option>
-                            <option value="фреза">Фреза</option>
-                            <option value="сверло">Сверло</option>
-                            <option value="развертка">Развертка</option>
-                            <option value="метчик">Метчик</option>
+                            {toolTypes.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
+                    {/* Diameter Input */}
                     <div className="mb-3">
-                        <label className="form-label">Диаметр инструмента*</label>
+                        <label htmlFor="diametr" className="form-label">Диаметр инструмента*</label>
                         <input
                             type="number"
                             className="form-control"
                             id="diametr"
                             name="diametr"
-                            value={tool.diametr}
-                            onChange={handleInput}
+                            value={formData.diametr}
+                            onChange={handleInputChange}
                             min="0"
                             step="0.1"
                             required
                         />
                     </div>
 
+                    {/* Working Length Input */}
                     <div className="mb-3">
-                        <label className="form-label">Рабочая длина*</label>
+                        <label htmlFor="working_length_tool" className="form-label">Рабочая длина*</label>
                         <input
                             type="number"
                             className="form-control"
                             id="working_length_tool"
                             name="working_length_tool"
-                            value={tool.working_length_tool}
-                            onChange={handleInput}
+                            value={formData.working_length_tool}
+                            onChange={handleInputChange}
                             min="0"
                             step="0.1"
                             required
                         />
                     </div>
 
+                    {/* Total Length Input */}
                     <div className="mb-3">
-                        <label className="form-label">Общая длина*</label>
+                        <label htmlFor="length_tool" className="form-label">Общая длина*</label>
                         <input
                             type="number"
                             className="form-control"
                             id="length_tool"
                             name="length_tool"
-                            value={tool.length_tool}
-                            onChange={handleInput}
+                            value={formData.length_tool}
+                            onChange={handleInputChange}
                             min="0"
                             step="0.1"
                             required
                         />
                     </div>
+
+                    {/* Material of Detail Input */}
                     <div className="mb-3">
-                        <label className="form-label">Материал заготовки*</label>
+                        <label htmlFor="material_of_detail" className="form-label">Материал заготовки*</label>
                         <input
                             type="text"
                             className="form-control"
                             id="material_of_detail"
                             name="material_of_detail"
-                            value={tool.material_of_detail}
-                            onChange={handleInput}
+                            value={formData.material_of_detail}
+                            onChange={handleInputChange}
                             required
                         />
                     </div>
+
+                    {/* Material of Tool Input */}
                     <div className="mb-3">
-                        <label className="form-label">Материал инструмента*</label>
+                        <label htmlFor="material_of_tool" className="form-label">Материал инструмента*</label>
                         <input
                             type="text"
                             className="form-control"
                             id="material_of_tool"
                             name="material_of_tool"
-                            value={tool.material_of_tool}
-                            onChange={handleInput}
+                            value={formData.material_of_tool}
+                            onChange={handleInputChange}
                             required
                         />
                     </div>
+
+                    {/* Description Textarea */}
                     <div className="mb-3">
-                        <label className="form-label">Описание</label>
+                        <label htmlFor="description" className="form-label">Описание</label>
                         <textarea
                             className="form-control"
                             id="description"
                             name="description"
-                            value={tool.description}
-                            onChange={handleInput}
+                            value={formData.description}
+                            onChange={handleInputChange}
+                            rows="3"
                         />
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">Фото</label>
-                        <input
-                            type="file"
-                            className="form-control"
-                            name="image_url"
-                            accept="image/jpeg, image/png, image/gif"
 
-                            onChange={handleImageChange}
-                        />
+                    {/* Price Input */}
+                    <div className="mb-3">
                         <label htmlFor="price" className="form-label">Цена</label>
                         <input
                             type="number"
                             className="form-control"
                             id="price"
                             name="price"
-                            value={product.price || ''}
-                            onChange={handleInputProduct}
+                            value={formData.price}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.01"
                         />
                     </div>
 
-                    <div className="d-grid gap-2">
+                    {/* Image Upload */}
+                    <div className="mb-3">
+                        <label htmlFor="image_file" className="form-label">Фото</label>
+                        <input
+                            type="file"
+                            className="form-control"
+                            id="image_file"
+                            name="image_file"
+                            accept="image/jpeg, image/png, image/gif"
+                            onChange={handleFileChange}
+                        />
+                    </div>
 
+                    {/* Form Buttons */}
+                    <div className="d-grid gap-2">
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            disabled={isLoading}
+                            disabled={isLoading || !isFormValid()}
                         >
                             {isLoading ? 'Создание...' : 'Создать инструмент'}
                         </button>
-
 
                         <button
                             type="button"
                             className="btn btn-secondary"
                             onClick={() => navigate("/")}
+                            disabled={isLoading}
                         >
                             Отмена
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
-
     );
 };
-
 
 export default CreateTool;

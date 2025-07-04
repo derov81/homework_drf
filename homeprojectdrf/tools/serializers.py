@@ -10,10 +10,12 @@ class ToolSeralizer(serializers.ModelSerializer):
     image_url = serializers.ImageField(required=False)
     product_id = serializers.SerializerMethodField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True, required=False)
+    creator = serializers.ReadOnlyField(source='creator.username')
 
     class Meta:
         model = Tool
         fields = '__all__'  # Включает 'price' только если оно явно указано в fields, иначе добавь сюда
+        read_only_fields = ['creator']  # creator нельзя задать вручную
 
     def get_product_id(self, obj):
         try:

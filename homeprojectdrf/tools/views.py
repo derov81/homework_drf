@@ -1,10 +1,10 @@
 import django_filters
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 
 from .models import Tool, UserProfile
 from .serializers import ToolSeralizer
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework import filters
 from .permissions import CustomPermission
 from rest_framework.decorators import api_view, permission_classes, action
@@ -24,9 +24,17 @@ from .serializers import ProductSerializer, OrderSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests
-
 from dotenv import load_dotenv
 import os
+import requests
+
+from django.contrib.auth import get_user_model
+from django.conf import settings
+import jwt
+import requests
+from functools import wraps
+
+
 
 
 load_dotenv()
@@ -35,13 +43,24 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 
 
 
+class IsCreatorOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Разрешаем только чтение всем
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Изменять/удалять может только создатель
+        return obj.creator == request.user
+
 class ToolViewSet(viewsets.ModelViewSet):
     queryset = Tool.objects.all()
     serializer_class = ToolSeralizer
-    permission_classes = [CustomPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsCreatorOrReadOnly]
     filter_backends = [filters.SearchFilter]  #[filters.OrderingFilter]
     #filterset_class = ToolFilter
     search_fields = ['__all__']
+
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user)
 
 
 @api_view(['GET'])
@@ -240,44 +259,58 @@ class UserCabinetView(APIView):
             return Response(serializer.data)
 
 
-class GoogleLoginAPIView(APIView):
-    permission_classes = [AllowAny]
+def add_cors_headers(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        response = view_func(request, *args, **kwargs)
+        response["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
 
-    def post(self, request):
+    return wrapper
+
+
+class GoogleLoginAPIView(APIView):
+    @add_cors_headers
+    def post(self, request, *args, **kwargs):
         token = request.data.get('token')
         if not token:
-            return Response({'error': 'Token is required'}, status=400)
+            return Response({'detail': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            idinfo = id_token.verify_oauth2_token(
+            # Валидация токена Google
+            decoded = jwt.decode(
                 token,
-                requests.Request(),
-                GOOGLE_CLIENT_ID
+                options={"verify_signature": False},  # Для тестирования, в продакшене нужно проверять
+                audience= '459926197304-vikdmjtdqoggh6aqae0k352s352arp00.apps.googleusercontent.com',
+                issuer="https://accounts.google.com"
             )
 
-            email = idinfo['email']
-            name = idinfo.get("name", email.split("@")[0])
-            username = name.replace(" ", "").lower()
+            # Создание/получение пользователя
+            User = get_user_model()
+            user, created = User.objects.get_or_create(
+                email=decoded['email'],
+                defaults={
+                    'username': decoded['email'],
+                    'first_name': decoded.get('given_name', ''),
+                    'last_name': decoded.get('family_name', '')
+                }
+            )
 
-            # Уникальное имя
-            base_username = username
-            i = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{i}"
-                i += 1
-
-            user, created = User.objects.get_or_create(email=email, defaults={'username': username})
-
-            # Профиль
-            UserProfile.objects.get_or_create(user=user)
-
+            # Генерация JWT токена
+            from rest_framework_simplejwt.tokens import RefreshToken
             refresh = RefreshToken.for_user(user)
+
             return Response({
-                'username': user.username,
-                'email': user.email,
                 'access': str(refresh.access_token),
                 'refresh': str(refresh)
             })
 
-        except ValueError:
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @add_cors_headers
+    def options(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_200_OK)
+

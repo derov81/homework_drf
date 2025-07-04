@@ -5,5 +5,4 @@ package-lock.json
 ../db.sqlite3
 /frontend/node_modules/
 /homeprojectdrf/homeprojectdrf/__pycache__
-/homeprojectdrf/tools/__pycache__
-homeprojectdrf/db.sqlite3
+**/node_modules/

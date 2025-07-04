@@ -5,6 +5,7 @@ import {Link} from "react-router-dom";
 const Header = ({user, onLogout, onLoginClick, setTab, setShowCart}) => {
     const {totalQuantity, fetchCart} = useCart();
 
+
     useEffect(() => {
         fetchCart(); // при монтировании обновим корзину
     }, []);
@@ -21,33 +22,36 @@ const Header = ({user, onLogout, onLoginClick, setTab, setShowCart}) => {
             <div className="logo">SHOP TOOLS</div>
             <div style={{marginInline: '30px'}}>info@shoptools.by</div>
             <div>+375 (17) 555-55-55</div>
+            {user && user.username !== 'admin' && (
+                <div style={{position: 'relative'}}>
 
-            <div style={{position: 'relative'}}>
-                <button
-                    onClick={() => {
-                        setTab('catalog');
-                        setShowCart(true);
-                    }}
-                    className="btn btn-outline-light"
-                >
-                    🛒
-                </button>
-                {totalQuantity > 0 && (
-                    <span style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        right: '-5px',
-                        background: 'red',
-                        color: 'white',
-                        borderRadius: '50%',
-                        padding: '3px 6px',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold',
-                    }}>
+                    <button
+                        onClick={() => {
+                            setTab('catalog');
+                            setShowCart(true);
+                        }}
+                        className="btn btn-outline-light"
+                    >
+                        🛒
+                    </button>
+
+                    {totalQuantity > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '-5px',
+                            right: '-5px',
+                            background: 'red',
+                            color: 'white',
+                            borderRadius: '50%',
+                            padding: '3px 6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                        }}>
             {totalQuantity}
           </span>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             <div>
                 {user ? (
