@@ -103,7 +103,7 @@ export default function ShowTool() {
     if (!tools.length) return (
         <div className="alert alert-info">
             Инструменты не найдены<br/>
-            {user && <Link to={'api/tools/create/'}>Добавить инструмент</Link>}
+            {user && user.username !== 'admin' &&<Link to={'api/tools/create/'}>Добавить инструмент</Link>}
         </div>
     );
 
@@ -112,7 +112,7 @@ export default function ShowTool() {
             <h3 className="text-center">Список инструментов</h3>
 
             <div className="d-flex justify-content-between mb-3">
-                {user && <Link to={'api/tools/create/'}>Добавить инструмент</Link>}
+                {user && user.username !== 'admin' &&<Link to={'api/tools/create/'}>Добавить инструмент</Link>}
             </div>
 
             <div className="mb-3">

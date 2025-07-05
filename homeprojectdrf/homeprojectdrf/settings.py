@@ -26,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=5)0(whsces5z&$nliqa)%%r2gf&r-ao8!@m6@c-!+7!twwgtr'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+REACT_APP_GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
